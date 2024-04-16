@@ -27,6 +27,7 @@
       {:else}
         {#each datasets as d}
           <DatasetCard dataset={d} />
+          <DatasetCard dataset={d} />
         {/each}
       {/if}
     {/await}

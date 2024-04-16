@@ -2,4 +2,5 @@
 pub struct Dataset {
     pub name: String,
     pub data_amount: u16,
+    pub thumbnail: String,
 }       

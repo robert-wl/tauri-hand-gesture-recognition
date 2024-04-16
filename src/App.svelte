@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Route, Router } from "svelte-routing";
   import Home from "./routes/Home.svelte";
-  import Preprocess from "./routes/Preprocess.svelte";
+  import Preprocess from "./routes/Dataset.svelte";
 </script>
 
 <Router>

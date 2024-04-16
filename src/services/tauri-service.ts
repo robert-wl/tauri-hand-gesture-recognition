@@ -13,6 +13,11 @@ export default class TauriService {
     return ipc.util.get_current_dir();
   }
 
+  public static async getDatasetThumbnail(dataName: string): Promise<string> {
+    const ipc = await this.getTauRPCProxy();
+    return ipc.dataset.get_dataset_thumbnail(dataName);
+  }
+
   private static async getTauRPCProxy() {
     if (!this.ipc) {
       this.ipc = await createTauRPCProxy();

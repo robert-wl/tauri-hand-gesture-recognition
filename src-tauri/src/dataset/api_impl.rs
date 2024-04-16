@@ -1,5 +1,7 @@
 use std::fs;
 
+use rand::random;
+
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::Dataset;
 
@@ -23,10 +25,12 @@ impl DatasetApi for DatasetApiImpl {
             let mut dataset = Dataset {
                 name: dataset_name.to_string(),
                 data_amount: 0,
+                thumbnail: String::new(),
             };
 
             let dataset_type = format!("{}/{}", directory, dataset_name);
 
+            println!("dataset_type: {:?}", dataset_type);
             let type_dir_list = get_directory_content(&dataset_type, &FileType::Directory);
 
             for type_dir in type_dir_list {
@@ -35,22 +39,31 @@ impl DatasetApi for DatasetApiImpl {
                 }
             }
 
+            dataset.thumbnail = self.clone().get_dataset_thumbnail(dataset_name.to_string()).await.unwrap();
+
             datasets.push(dataset);
         }
 
         Ok(datasets)
     }
 
-    async fn get_dataset_thumbnail(self, dataset_name: String) -> Result<Vec<u8>, String> {
+    async fn get_dataset_thumbnail(self, dataset_name: String) -> Result<String, String> {
         let directory = format!("dataset/{}", dataset_name);
 
-        let dir_list = get_directory_content(&directory, &FileType::File);
+        let dir_list = get_directory_content(&directory, &FileType::Directory);
 
-        let thumbnail_path = format!("{}/thumbnail.png", directory);
+        let random_number = random::<usize>() % dir_list.len();
+        let random_dir = dir_list.get(random_number).unwrap();
 
-        let thumbnail = fs::read(thumbnail_path).expect("failed to read thumbnail");
+        let file_list = get_directory_content(random_dir, &FileType::File);
 
-        Ok(thumbnail)
+        let random_number = random::<usize>() % file_list.len();
+        let random_file = file_list.get(random_number).unwrap();
+
+        let thumbnail = fs::read(random_file).expect("failed to read thumbnail");
+
+        let base64_thumbnail = base64::encode(thumbnail);
+        Ok(base64_thumbnail)
     }
 }
 
