@@ -18,6 +18,11 @@ export default class TauriService {
     return ipc.dataset.get_dataset_thumbnail(dataName);
   }
 
+  public static async openDatasetDirectory() {
+    const ipc = await this.getTauRPCProxy();
+    return ipc.dataset.open_dataset_directory();
+  }
+
   private static async getTauRPCProxy() {
     if (!this.ipc) {
       this.ipc = await createTauRPCProxy();

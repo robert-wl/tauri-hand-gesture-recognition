@@ -1,10 +1,10 @@
 <script>
-  import MenuCard from "../lib/components/MenuCard.svelte";
+  import MenuCard from "../lib/components/home/MenuCard.svelte";
 </script>
 
 <div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
   <div class="flex flex-col py-5 gap-5 items-center">
-    <h1 class="text-4xl font-bold text-center">Hand Gesture Recognition</h1>
+    <h1 class="text-4xl font-bold text-center mt-16">Hand Gesture Recognition</h1>
     <p class="text-center text-lg max-w-[40rem]">
       A Machine Learning Project to Recognize Hand Gestures, Preprocessed using MediaPipe Framework and Trained using Support Vector Machine Model
     </p>

@@ -1,7 +1,6 @@
 use std::fs;
 
 use rand::random;
-
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::Dataset;
 
@@ -64,6 +63,19 @@ impl DatasetApi for DatasetApiImpl {
 
         let base64_thumbnail = base64::encode(thumbnail);
         Ok(base64_thumbnail)
+    }
+
+    async fn open_dataset_directory(self) -> Result<(), String> {
+        let directory = "dataset";
+
+        check_or_create(directory);
+
+        let _ = std::process::Command::new("explorer")
+            .arg(directory)
+            .output()
+            .expect("failed to open directory");
+
+        Ok(())
     }
 }
 

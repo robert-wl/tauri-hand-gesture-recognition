@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Dataset } from "../../../bindings";
-  import TauriService from "../../services/tauri-service";
+  import type { Dataset } from "../../../../bindings";
+  import TauriService from "../../../services/tauri-service";
 
   export let dataset: Dataset;
   let imageElement: Optional<HTMLImageElement> = undefined;
@@ -25,7 +25,7 @@
   <div class="card w-64 min-h-40 bg-base-100 hover:bg-gray-50 shadow-xl cursor-pointer duration-300 transition-all hover:-translate-y-2">
     <div class="card-body items-center">
       <h2 class="card-title text-xl text-center pb-2">{dataset.name}</h2>
-      <div class="w-48 bg-gray-200 rounded-md">
+      <div class="w-48 bg-gray-400 rounded-md">
         <img
           alt="Dataset Thumbnail"
           bind:this={imageElement}

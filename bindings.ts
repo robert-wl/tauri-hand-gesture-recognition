@@ -2,15 +2,15 @@
 
 export type Dataset = { name: string; data_amount: number; thumbnail: string }
 
-export type TauRpcDatasetApiInputTypes = { proc_name: "get_datasets"; input_type: null } | { proc_name: "get_dataset_thumbnail"; input_type: { __taurpc_type: string } }
+export type TauRpcDatasetApiInputTypes = { proc_name: "get_datasets"; input_type: null } | { proc_name: "get_dataset_thumbnail"; input_type: { __taurpc_type: string } } | { proc_name: "open_dataset_directory"; input_type: null }
 
-export type TauRpcDatasetApiOutputTypes = { proc_name: "get_datasets"; output_type: Dataset[] } | { proc_name: "get_dataset_thumbnail"; output_type: string }
+export type TauRpcDatasetApiOutputTypes = { proc_name: "get_datasets"; output_type: Dataset[] } | { proc_name: "get_dataset_thumbnail"; output_type: string } | { proc_name: "open_dataset_directory"; output_type: null }
 
 export type TauRpcUtilApiInputTypes = { proc_name: "get_current_dir"; input_type: null }
 
 export type TauRpcUtilApiOutputTypes = { proc_name: "get_current_dir"; output_type: string }
 
-const ARGS_MAP = {"util":"{\"get_current_dir\":[]}","dataset":"{\"get_datasets\":[],\"get_dataset_thumbnail\":[\"dataset_name\"]}"}
+const ARGS_MAP = {"util":"{\"get_current_dir\":[]}","dataset":"{\"get_datasets\":[],\"open_dataset_directory\":[],\"get_dataset_thumbnail\":[\"dataset_name\"]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)
