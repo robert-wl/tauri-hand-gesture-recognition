@@ -1,5 +1,12 @@
-<script>
+<script lang="ts">
   import MenuCard from "../lib/components/home/MenuCard.svelte";
+  import { createTauRPCProxy } from "../../bindings.js";
+
+  async function test() {
+    const tsc = await createTauRPCProxy();
+    const res = await tsc.dataset.preprocess_dataset("Dataset BISINDO");
+    console.log("FINISHED", res);
+  }
 </script>
 
 <div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
@@ -16,10 +23,12 @@
         text="Preprocess Hand Images with MediaPipe Framework"
         title="Data Preprocessing" />
     </a>
-    <MenuCard
-      imageUrl="/home/model-training.png"
-      text="Train a Support Vector Machine Model with to classify Hand Gestures"
-      title="Model Training" />
+    <button on:click={test}>
+      <MenuCard
+        imageUrl="/home/model-training.png"
+        text="Train a Support Vector Machine Model with to classify Hand Gestures"
+        title="Model Training" />
+    </button>
     <MenuCard
       imageUrl="/home/model-testing.png"
       text="Test the Model on New Hand Gestures"

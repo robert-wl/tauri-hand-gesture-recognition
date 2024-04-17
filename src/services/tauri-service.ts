@@ -20,7 +20,7 @@ export default class TauriService {
 
   public static async openDatasetDirectory() {
     const ipc = await this.getTauRPCProxy();
-    return ipc.dataset.open_dataset_directory();
+    return ipc.util.open_directory();
   }
 
   private static async getTauRPCProxy() {

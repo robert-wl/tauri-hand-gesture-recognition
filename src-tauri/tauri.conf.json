@@ -41,7 +41,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": [
+        "./scripts/*"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {
@@ -49,7 +51,7 @@
         "digestAlgorithm": "sha256",
         "timestampUrl": "",
         "webviewInstallMode": {
-          "type": "offlineInstaller"
+          "type": "downloadBootstrapper"
         }
       }
     },

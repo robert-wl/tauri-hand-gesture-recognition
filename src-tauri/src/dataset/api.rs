@@ -4,5 +4,5 @@ use crate::dataset::dataset::Dataset;
 pub trait DatasetApi {
     async fn get_datasets() -> Result<Vec<Dataset>, String>;
     async fn get_dataset_thumbnail(dataset_name: String) -> Result<String, String>;
-    async fn open_dataset_directory() -> Result<(), String>;
+    async fn preprocess_dataset(dataset_name: String) -> Result<(), String>;
 }

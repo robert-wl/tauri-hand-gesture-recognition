@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 
+mod utils;
+
 use std::process::Command;
 
 use taurpc::Router;
@@ -10,6 +12,7 @@ use crate::dataset::api::DatasetApi;
 use crate::dataset::api_impl::DatasetApiImpl;
 use crate::util::api::UtilApi;
 use crate::util::api_impl::UtilApiImpl;
+use crate::utils::create_python_venv;
 
 mod dataset {
     pub mod api;
@@ -24,21 +27,10 @@ mod util {
 }
 
 
-fn create_python_venv() -> Result<(), String> {
-    let output = Command::new("python")
-        .arg("-m")
-        .arg("venv")
-        .arg(".venv")
-        .output()
-        .expect("failed to create python venv");
-
-    println!("Status: {}", output.status);
-    Ok(())
-}
-
-
 #[tokio::main]
 async fn main() {
+    let _ = create_python_venv();
+
     let router = Router::new()
         .merge(DatasetApiImpl.into_handler())
         .merge(UtilApiImpl.into_handler());

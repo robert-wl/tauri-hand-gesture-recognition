@@ -1,4 +1,5 @@
 use crate::util::api::UtilApi;
+use crate::utils::check_or_create;
 
 #[derive(Clone)]
 pub struct UtilApiImpl;
@@ -17,6 +18,19 @@ impl UtilApi for UtilApiImpl {
             }
             Err(_) => Err("failed to get current directory".to_string())
         }
+    }
+
+    async fn open_directory(self) -> Result<(), String> {
+        let directory = "dataset";
+
+        check_or_create(directory).await;
+
+        let _ = std::process::Command::new("explorer")
+            .arg(directory)
+            .output()
+            .expect("failed to open directory");
+
+        Ok(())
     }
 }
 

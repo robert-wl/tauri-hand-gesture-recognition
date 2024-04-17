@@ -1,8 +1,10 @@
 use std::fs;
+use std::process::{Command, Stdio};
 
 use rand::random;
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::Dataset;
+use crate::utils::{FileType, get_directory_content};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
@@ -14,8 +16,6 @@ impl DatasetApi for DatasetApiImpl {
         let directory = "dataset";
 
         let mut datasets = Vec::new();
-
-        check_or_create(directory);
 
         let dir_list = get_directory_content(directory, &FileType::Directory);
 
@@ -65,62 +65,46 @@ impl DatasetApi for DatasetApiImpl {
         Ok(base64_thumbnail)
     }
 
-    async fn open_dataset_directory(self) -> Result<(), String> {
-        let directory = "dataset";
+    async fn preprocess_dataset(self, dataset_name: String) -> Result<(), String> {
+        let in_dir = format!("dataset\\{}", dataset_name);
+        let out_dir = format!("processed\\{}", dataset_name);
 
-        check_or_create(directory);
+        let dir_list = get_directory_content(&in_dir, &FileType::Directory);
 
-        let _ = std::process::Command::new("explorer")
-            .arg(directory)
-            .output()
-            .expect("failed to open directory");
+        for dir in dir_list {
+            println!("dir: {:?}", dir);
+            let dir_name = dir.split("/").last().unwrap();
+            let fin_in_dir = format!("{}\\{}", in_dir, dir_name);
+            let fin_out_dir = format!("{}\\{}", out_dir, dir_name);
+
+            let script_path = "scripts\\mediapipe_converter.py";
+            let venv_dir = ".venv";
+
+            let activate_script = if cfg!(windows) {
+                format!("{}\\Scripts\\activate.bat", venv_dir)
+            } else {
+                format!("{}\\bin\\activate", venv_dir)
+            };
+
+            let mut child = Command::new("cmd")
+                .args(&["/C", &activate_script, "&&", "python", script_path, &fin_in_dir, &fin_out_dir])
+                .stdout(Stdio::inherit())
+                .stderr(Stdio::inherit())
+                .spawn()
+                .map_err(|e| format!("Failed to execute Python script: {}", e))?;
+
+            let status = child.wait().expect("failed to wait on child");
+
+            if !status.success() {
+                return Err("Failed to execute Python script".to_string());
+            }
+        }
 
         Ok(())
     }
 }
 
 
-enum FileType {
-    Directory,
-    File,
-    All,
-}
 
 
-fn check_or_create(path: &str) {
-    if !std::path::Path::new(path).exists() {
-        fs::create_dir_all(path).expect("failed to create directory");
-    }
-}
 
-fn get_directory_content(dir: &str, scan_type: &FileType) -> Vec<String> {
-    let entries = fs::read_dir(dir).expect("failed to read directory");
-
-    let mut dir_list: Vec<String> = Vec::new();
-
-    for entry in entries {
-        let path = entry.expect("failed to get entry").path();
-
-        let dir_name = path.file_name().unwrap().to_str().unwrap();
-
-        let new_dir = format!("{}/{}", dir, dir_name);
-
-        match scan_type {
-            FileType::Directory => {
-                if path.is_dir() {
-                    dir_list.push(new_dir);
-                }
-            }
-            FileType::File => {
-                if path.is_file() {
-                    dir_list.push(new_dir);
-                }
-            }
-            FileType::All => {
-                dir_list.push(new_dir);
-            }
-        }
-    }
-
-    return dir_list;
-}
