@@ -1,6 +1,7 @@
 <script lang="ts">
   import MenuCard from "../lib/components/home/MenuCard.svelte";
   import { createTauRPCProxy } from "../../bindings.js";
+  import { Link } from "svelte-routing";
 
   async function test() {
     const tsc = await createTauRPCProxy();
@@ -17,12 +18,12 @@
     </p>
   </div>
   <div class="w-full flex flex-wrap justify-center items-center gap-4 p-4">
-    <a href="/preprocess">
+    <Link to="/dataset">
       <MenuCard
         imageUrl="/home/data-preprocess.png"
         text="Preprocess Hand Images with MediaPipe Framework"
         title="Data Preprocessing" />
-    </a>
+    </Link>
     <button on:click={test}>
       <MenuCard
         imageUrl="/home/model-training.png"

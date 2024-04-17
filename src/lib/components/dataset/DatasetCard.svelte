@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Dataset } from "../../../../bindings";
   import TauriService from "../../../services/tauri-service";
+  import { navigate } from "svelte-routing";
 
   export let dataset: Dataset;
   let imageElement: Optional<HTMLImageElement> = undefined;
@@ -15,7 +16,7 @@
   }
 
   function selectDataset(dataset: Dataset) {
-    localStorage.setItem("selectedDataset", JSON.stringify(dataset));
+    navigate(`/preprocess/${dataset.name}`);
   }
 </script>
 

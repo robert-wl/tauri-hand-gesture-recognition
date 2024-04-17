@@ -1,11 +1,9 @@
 <script lang="ts">
-  import TauriService from "../services/tauri-service";
-  import DatasetCard from "../lib/components/dataset/DatasetCard.svelte";
-  import EmptyDatasetCard from "../lib/components/dataset/EmptyDatasetCard.svelte";
+  import TauriService from "../../services/tauri-service";
+  import DatasetCard from "../../lib/components/dataset/DatasetCard.svelte";
+  import EmptyDatasetCard from "../../lib/components/dataset/EmptyDatasetCard.svelte";
 
   async function fetchData() {
-    const res = await TauriService.getCurrentDirectory();
-    console.log(res);
     return await TauriService.getDatasets();
   }
 </script>
