@@ -1,4 +1,5 @@
 use std::fs;
+use std::os::windows::process::CommandExt;
 use std::process::{Command, Stdio};
 
 use rand::random;
@@ -9,7 +10,7 @@ use crate::utils::{FileType, get_directory_content};
 #[derive(Clone)]
 pub struct DatasetApiImpl;
 
-
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 #[taurpc::resolvers]
 impl DatasetApi for DatasetApiImpl {
     async fn get_datasets(self) -> Result<Vec<Dataset>, String> {
@@ -65,6 +66,7 @@ impl DatasetApi for DatasetApiImpl {
         Ok(base64_thumbnail)
     }
 
+
     async fn preprocess_dataset(self, dataset_name: String) -> Result<(), String> {
         let in_dir = format!("dataset\\{}", dataset_name);
         let out_dir = format!("processed\\{}", dataset_name);
@@ -90,6 +92,7 @@ impl DatasetApi for DatasetApiImpl {
                 .args(&["/C", &activate_script, "&&", "python", script_path, &fin_in_dir, &fin_out_dir])
                 .stdout(Stdio::inherit())
                 .stderr(Stdio::inherit())
+                .creation_flags(CREATE_NO_WINDOW)
                 .spawn()
                 .map_err(|e| format!("Failed to execute Python script: {}", e))?;
 
