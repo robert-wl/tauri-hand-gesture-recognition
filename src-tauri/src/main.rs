@@ -2,7 +2,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 
-use std::process::Command;
 
 
 use taurpc::Router;
@@ -11,16 +10,15 @@ use crate::dataset::api::DatasetApi;
 use crate::dataset::api_impl::DatasetApiImpl;
 use crate::util::api::UtilApi;
 use crate::util::api_impl::UtilApiImpl;
-use crate::utils::create_python_venv;
 
 pub mod dataset;
 pub mod util;
 pub mod utils;
+mod py_utils;
 
 
 #[tokio::main]
 async fn main() {
-    let _ = create_python_venv();
 
     let router = Router::new()
         .merge(DatasetApiImpl.into_handler())

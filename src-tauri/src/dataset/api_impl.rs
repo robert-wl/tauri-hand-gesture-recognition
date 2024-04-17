@@ -5,12 +5,13 @@ use std::process::{Command, Stdio};
 use rand::random;
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::Dataset;
+use crate::py_utils::run_script;
 use crate::utils::{FileType, get_directory_content};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
 
-const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 #[taurpc::resolvers]
 impl DatasetApi for DatasetApiImpl {
     async fn get_datasets(self) -> Result<Vec<Dataset>, String> {
@@ -80,26 +81,11 @@ impl DatasetApi for DatasetApiImpl {
             let fin_out_dir = format!("{}\\{}", out_dir, dir_name);
 
             let script_path = "scripts\\mediapipe_converter.py";
-            let venv_dir = ".venv";
 
-            let activate_script = if cfg!(windows) {
-                format!("{}\\Scripts\\activate.bat", venv_dir)
-            } else {
-                format!("{}\\bin\\activate", venv_dir)
-            };
-
-            let mut child = Command::new("cmd")
-                .args(&["/C", &activate_script, "&&", "python", script_path, &fin_in_dir, &fin_out_dir])
-                .stdout(Stdio::inherit())
-                .stderr(Stdio::inherit())
-                .creation_flags(CREATE_NO_WINDOW)
-                .spawn()
-                .map_err(|e| format!("Failed to execute Python script: {}", e))?;
-
-            let status = child.wait().expect("failed to wait on child");
+            let status = run_script(script_path, vec![fin_in_dir, fin_out_dir]);
 
             if !status.success() {
-                return Err("Failed to execute Python script".to_string());
+                return Err("Failed to preprocess dataset".to_string());
             }
         }
 
