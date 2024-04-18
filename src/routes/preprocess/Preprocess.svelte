@@ -1,20 +1,29 @@
 <script lang="ts">
-  import DataLabelGrid from "../../lib/components/dataset/DataLabelGrid.svelte";
-  import type { Dataset } from "../../../bindings";
+  import type { Dataset, Label } from "../../../bindings";
   import TauriService from "../../services/tauri-service";
-  import { Link } from "svelte-routing";
+  import DataPreviewModal from "../../lib/components/dataset/DataPreviewModal.svelte";
+  import DatasetLabelCard from "../../lib/components/dataset/DatasetLabelCard.svelte";
 
-  export let name: string = "test";
+  export let name: string = "";
+
+  let dialog: HTMLDialogElement;
+  let chosenLabel: Optional<Label>;
   let dataset: Dataset = {
     name: "",
-    thumbnail: "",
-    data_amount: -1,
-    label_amount: -1,
+    labels: [],
   };
 
   const getDataset = async () => {
     dataset = await TauriService.getDataset(name);
   };
+
+  const openModal = (label: Label) => {
+    chosenLabel = label;
+    dialog.showModal();
+  };
+
+  $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
+
   getDataset();
 </script>
 
@@ -36,14 +45,25 @@
         </div>
         <div class="card-body pt-2 flex flex-col h-full items-start justify-start">
           <div class="flex flex-col items-start flex-1">
-            <div class="text-center">Total Types: {dataset.label_amount}</div>
-            <div class="text-center">Total Images: {dataset.data_amount}</div>
-            <div class="text-center">Processed Images: 0/{dataset.data_amount}</div>
+            <div class="text-center">Total Types: {dataset.labels.length}</div>
+            <div class="text-center">Total Images: {dataLength}</div>
+            <div class="text-center">Processed Images: 0/{dataLength}</div>
           </div>
           <button class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"> Preprocess Dataset </button>
         </div>
       </div>
     </div>
-    <DataLabelGrid {name} />
+    <div class="w-full h-full grid 2xl:grid-cols-6 grid-cols-4 gap-10">
+      {#each dataset.labels as label}
+        <DatasetLabelCard
+          on:click={() => openModal(label)}
+          datasetName={name}
+          datasetLabel={label} />
+      {/each}
+
+      <DataPreviewModal
+        bind:dialog
+        datasetLabel={chosenLabel} />
+    </div>
   </div>
 </div>

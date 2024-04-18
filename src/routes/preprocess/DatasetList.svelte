@@ -20,9 +20,9 @@
       {#if datasets.length === 0}
         <EmptyDatasetCard />
       {:else}
-        {#each datasets as d}
-          <DatasetCard dataset={d} />
-          <DatasetCard dataset={d} />
+        {#each datasets as dataset}
+          <DatasetCard {dataset} />
+          <DatasetCard {dataset} />
         {/each}
       {/if}
     {/await}

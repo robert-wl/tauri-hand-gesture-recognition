@@ -1,9 +1,9 @@
-import { createTauRPCProxy, type Dataset, type DatasetLabel } from "../../bindings";
+import { createTauRPCProxy, type Dataset, type Label, type GeneralDataset } from "../../bindings";
 
 export default class TauriService {
   private static ipc: Awaited<ReturnType<typeof createTauRPCProxy>>;
 
-  public static async getDatasets(): Promise<Dataset[]> {
+  public static async getDatasets(): Promise<GeneralDataset[]> {
     const ipc = await this.getTauRPCProxy();
     return ipc.dataset.get_all();
   }
@@ -23,7 +23,7 @@ export default class TauriService {
     return ipc.dataset.get(dataName);
   }
 
-  public static async getDatasetLabel(dataName: string): Promise<DatasetLabel[]> {
+  public static async getDatasetLabel(dataName: string): Promise<Label[]> {
     const ipc = await this.getTauRPCProxy();
     return ipc.dataset.get_labels(dataName);
   }

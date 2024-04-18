@@ -5,7 +5,7 @@
 
   async function test() {
     const tsc = await createTauRPCProxy();
-    const res = await tsc.dataset.preprocess_dataset("Dataset BISINDO");
+    // const res = await tsc.dataset.preprocess_dataset("Dataset BISINDO");
     console.log("FINISHED", res);
   }
 </script>

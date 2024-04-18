@@ -1,21 +1,20 @@
+
+
 #[taurpc::ipc_type]
-pub struct Dataset {
+pub struct GeneralDataset {
     pub name: String,
     pub label_amount: u16,
     pub data_amount: u16,
-    pub thumbnail: String,
 }
 
 #[taurpc::ipc_type]
-pub struct DatasetLabel {
+pub struct Dataset {
     pub name: String,
-    pub data_amount: u16,
-    pub thumbnail: String,
+    pub labels: Vec<Label>,
 }
 
 #[taurpc::ipc_type]
-pub struct DatasetData {
+pub struct Label {
     pub name: String,
-    pub raw_thumbnail: String,
-    pub processed_thumbnail: String,
+    pub data: Vec<String>,
 }
