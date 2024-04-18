@@ -2,19 +2,19 @@
 
 export type Dataset = { name: string; label_amount: number; data_amount: number; thumbnail: string }
 
-export type DatasetData = { name: string; thumbnail: string }
+export type DatasetData = { name: string; raw_thumbnail: string; processed_thumbnail: string }
 
 export type DatasetLabel = { name: string; data_amount: number; thumbnail: string }
 
-export type TauRpcDatasetApiInputTypes = { proc_name: "get_datasets"; input_type: null } | { proc_name: "get_dataset_thumbnail"; input_type: { __taurpc_type: string } } | { proc_name: "get_dataset_label_data"; input_type: { __taurpc_type: string } } | { proc_name: "get_dataset"; input_type: { __taurpc_type: string } } | { proc_name: "preprocess_dataset"; input_type: { __taurpc_type: string } }
+export type TauRpcDatasetApiInputTypes = { proc_name: "get_all"; input_type: null } | { proc_name: "get_random_thumbnail"; input_type: { __taurpc_type: string } } | { proc_name: "get_labels"; input_type: { __taurpc_type: string } } | { proc_name: "get_data"; input_type: [string, string] } | { proc_name: "get"; input_type: { __taurpc_type: string } } | { proc_name: "preprocess"; input_type: { __taurpc_type: string } } | { proc_name: "get_thumbnail"; input_type: [string, string, string] } | { proc_name: "get_processed_thumbnail"; input_type: [string, string, string] }
 
-export type TauRpcDatasetApiOutputTypes = { proc_name: "get_datasets"; output_type: Dataset[] } | { proc_name: "get_dataset_thumbnail"; output_type: string } | { proc_name: "get_dataset_label_data"; output_type: DatasetLabel[] } | { proc_name: "get_dataset"; output_type: Dataset } | { proc_name: "preprocess_dataset"; output_type: null }
+export type TauRpcDatasetApiOutputTypes = { proc_name: "get_all"; output_type: Dataset[] } | { proc_name: "get_random_thumbnail"; output_type: string } | { proc_name: "get_labels"; output_type: DatasetLabel[] } | { proc_name: "get_data"; output_type: DatasetData[] } | { proc_name: "get"; output_type: Dataset } | { proc_name: "preprocess"; output_type: null } | { proc_name: "get_thumbnail"; output_type: string } | { proc_name: "get_processed_thumbnail"; output_type: string }
 
 export type TauRpcUtilApiInputTypes = { proc_name: "get_current_dir"; input_type: null } | { proc_name: "open_directory"; input_type: null }
 
 export type TauRpcUtilApiOutputTypes = { proc_name: "get_current_dir"; output_type: string } | { proc_name: "open_directory"; output_type: null }
 
-const ARGS_MAP = {"dataset":"{\"get_datasets\":[],\"get_dataset_thumbnail\":[\"dataset_name\"],\"get_dataset_label_data\":[\"dataset_name\"],\"get_dataset\":[\"dataset_name\"],\"preprocess_dataset\":[\"dataset_name\"]}","util":"{\"get_current_dir\":[],\"open_directory\":[]}"}
+const ARGS_MAP = {"dataset":"{\"get_data\":[\"dataset_name\",\"label_name\"],\"get_random_thumbnail\":[\"dataset_name\"],\"get\":[\"dataset_name\"],\"get_thumbnail\":[\"name\",\"label\",\"data\"],\"get_labels\":[\"dataset_name\"],\"preprocess\":[\"dataset_name\"],\"get_processed_thumbnail\":[\"name\",\"label\",\"data\"],\"get_all\":[]}","util":"{\"get_current_dir\":[],\"open_directory\":[]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)

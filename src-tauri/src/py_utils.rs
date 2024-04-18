@@ -19,13 +19,9 @@ pub fn create_venv() -> () {
 
 pub fn run_script(script_path: &str, args: Vec<String>) -> ExitStatus {
     let venv_path = if cfg!(windows) {
-        Path::new(VENV_DIR)
-            .join("Scripts")
-            .join("activate.bat")
+        Path::new(VENV_DIR).join("Scripts").join("activate.bat")
     } else {
-        Path::new(VENV_DIR)
-            .join("bin")
-            .join("activate")
+        Path::new(VENV_DIR).join("bin").join("activate")
     };
 
     let activate_script = venv_path.to_str().unwrap();

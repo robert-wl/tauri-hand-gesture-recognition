@@ -5,7 +5,7 @@ export default class TauriService {
 
   public static async getDatasets(): Promise<Dataset[]> {
     const ipc = await this.getTauRPCProxy();
-    return ipc.dataset.get_datasets();
+    return ipc.dataset.get_all();
   }
 
   public static async getCurrentDirectory(): Promise<string> {
@@ -15,22 +15,27 @@ export default class TauriService {
 
   public static async getDatasetThumbnail(dataName: string): Promise<string> {
     const ipc = await this.getTauRPCProxy();
-    return ipc.dataset.get_dataset_thumbnail(dataName);
+    return ipc.dataset.get_random_thumbnail(dataName);
   }
 
   public static async getDataset(dataName: string): Promise<Dataset> {
     const ipc = await this.getTauRPCProxy();
-    return ipc.dataset.get_dataset(dataName);
+    return ipc.dataset.get(dataName);
   }
 
   public static async getDatasetLabel(dataName: string): Promise<DatasetLabel[]> {
     const ipc = await this.getTauRPCProxy();
-    return ipc.dataset.get_dataset_label_data(dataName);
+    return ipc.dataset.get_labels(dataName);
   }
 
   public static async openDatasetDirectory() {
     const ipc = await this.getTauRPCProxy();
     return ipc.util.open_directory();
+  }
+
+  public static async getDatasetData(dataName: string, label: string) {
+    const ipc = await this.getTauRPCProxy();
+    return ipc.dataset.get_data(dataName, label);
   }
 
   private static async getTauRPCProxy() {

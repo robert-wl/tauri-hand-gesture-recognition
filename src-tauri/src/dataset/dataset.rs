@@ -16,5 +16,6 @@ pub struct DatasetLabel {
 #[taurpc::ipc_type]
 pub struct DatasetData {
     pub name: String,
-    pub thumbnail: String,
+    pub raw_thumbnail: String,
+    pub processed_thumbnail: String,
 }
