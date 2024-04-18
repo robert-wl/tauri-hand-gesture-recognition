@@ -3,21 +3,23 @@
   import Home from "./routes/Home.svelte";
   import Dataset from "./routes/preprocess/DatasetList.svelte";
   import Preprocess from "./routes/preprocess/Preprocess.svelte";
+  import { cubicIn } from "svelte/easing";
+  import { blur, draw, fade, fly, scale, slide } from "svelte/transition";
 </script>
 
 <Router>
   <!--      <Route component={BlogPost} path="/blog/:id" />-->
   <!--      <Route component={Blog} path="/blog" />-->
   <!--      <Route component={About} path="/about" />-->
+  <Route path="/">
+    <Home />
+  </Route>
   <Route path="/dataset">
     <Dataset />
   </Route>
   <Route
-    path="/preprocess/:name"
-    let:params>
+    let:params
+    path="/preprocess/:name">
     <Preprocess name={params.name} />
-  </Route>
-  <Route path="/">
-    <Home />
   </Route>
 </Router>

@@ -4,7 +4,6 @@ use crate::utils::check_or_create;
 #[derive(Clone)]
 pub struct UtilApiImpl;
 
-
 #[taurpc::resolvers]
 impl UtilApi for UtilApiImpl {
     async fn get_current_dir(self) -> Result<String, String> {
@@ -16,7 +15,7 @@ impl UtilApi for UtilApiImpl {
                 let path_str = path_str.rsplitn(2, "/").last().unwrap();
                 Ok(path_str.to_string())
             }
-            Err(_) => Err("failed to get current directory".to_string())
+            Err(_) => Err("failed to get current directory".to_string()),
         }
     }
 
@@ -33,4 +32,3 @@ impl UtilApi for UtilApiImpl {
         Ok(())
     }
 }
-

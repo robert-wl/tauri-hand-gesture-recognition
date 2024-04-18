@@ -1,8 +1,5 @@
 use std::fs;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
-use std::process::Command;
+use std::path::{Path, PathBuf};
 
 pub async fn check_or_create(path: &str) -> () {
     if !Path::new(path).exists() {
@@ -10,24 +7,21 @@ pub async fn check_or_create(path: &str) -> () {
     }
 }
 
-
 pub enum FileType {
     Directory,
     File,
     All,
 }
 
-pub fn get_directory_content(dir: &str, scan_type: &FileType) -> Vec<String> {
+pub fn get_directory_content(dir: &Path, scan_type: &FileType) -> Vec<PathBuf> {
     let entries = fs::read_dir(dir).expect("failed to read directory");
 
-    let mut dir_list: Vec<String> = Vec::new();
+    let mut dir_list: Vec<PathBuf> = Vec::new();
 
     for entry in entries {
         let path = entry.expect("failed to get entry").path();
 
-        let dir_name = path.file_name().unwrap().to_str().unwrap();
-
-        let new_dir = format!("{}/{}", dir, dir_name);
+        let new_dir = dir.join(path.file_name().unwrap());
 
         match scan_type {
             FileType::Directory => {
@@ -48,4 +42,3 @@ pub fn get_directory_content(dir: &str, scan_type: &FileType) -> Vec<String> {
 
     return dir_list;
 }
-

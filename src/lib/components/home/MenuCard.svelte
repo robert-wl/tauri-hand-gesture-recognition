@@ -4,7 +4,8 @@
   export let text: string;
 </script>
 
-<div class="card w-80 min-h-[32rem] bg-white hover:bg-gray-50 shadow-xl cursor-pointer duration-300 transition-all hover:-translate-y-2">
+<div
+  class="card w-80 min-h-[32rem] bg-white hover:bg-gray-50 shadow-xl cursor-pointer duration-300 transition-all hover:-translate-y-2 border-primary border-t-2">
   <figure class="p-8">
     <img
       alt={title}

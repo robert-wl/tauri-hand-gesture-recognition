@@ -2,6 +2,7 @@
   import DataLabelGrid from "../../lib/components/dataset/DataLabelGrid.svelte";
   import type { Dataset } from "../../../bindings";
   import TauriService from "../../services/tauri-service";
+  import { Link } from "svelte-routing";
 
   export let name: string = "test";
   let dataset: Dataset = {
@@ -24,14 +25,22 @@
   </div>
   <div class="w-full flex flex-row justify-start items-start gap-10 p-4">
     <div>
-      <div class="card w-64 min-h-80 bg-base-100 shadow-xl sticky top-0">
-        <div class="card-body flex flex-col h-full items-center justify-start sticky top-0">
-          <h2 class="card-title text-xl text-center pb-2">{name}</h2>
+      <div class="card w-64 min-h-80 bg-base-100 shadow-xl sticky top-0 border-primary border-t-2">
+        <div class="card-title pb-0 py-4 flex flex-col items-center justify-between">
+          <img
+            alt="dataset"
+            class="w-32 h-32 rounded-full"
+            src="/preprocess/dataset.png" />
+          <h2 class="text-xl font-bold">{name}</h2>
           <hr class="my-2 w-full border-gray-200" />
-          <p class="text-center">Total Types: {dataset.label_amount}</p>
-          <p class="text-center">Total Images: {dataset.data_amount}</p>
-          <p class="text-center">Processed Images: 0/{dataset.data_amount}</p>
-          <button class="btn btn-accent text-white mt-2">Preprocess Dataset</button>
+        </div>
+        <div class="card-body pt-2 flex flex-col h-full items-start justify-start">
+          <div class="flex flex-col items-start flex-1">
+            <div class="text-center">Total Types: {dataset.label_amount}</div>
+            <div class="text-center">Total Images: {dataset.data_amount}</div>
+            <div class="text-center">Processed Images: 0/{dataset.data_amount}</div>
+          </div>
+          <button class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"> Preprocess Dataset </button>
         </div>
       </div>
     </div>

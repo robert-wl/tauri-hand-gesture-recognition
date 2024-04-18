@@ -13,7 +13,7 @@
   };
 </script>
 
-<div class="w-full h-full grid grid-cols-6 gap-10">
+<div class="w-full h-full grid 2xl:grid-cols-6 grid-cols-4 gap-10">
   {#await fetchData()}
     <h1>Loading...</h1>
   {:then labels}

@@ -14,7 +14,7 @@ export type TauRpcUtilApiInputTypes = { proc_name: "get_current_dir"; input_type
 
 export type TauRpcUtilApiOutputTypes = { proc_name: "get_current_dir"; output_type: string } | { proc_name: "open_directory"; output_type: null }
 
-const ARGS_MAP = {"dataset":"{\"preprocess_dataset\":[\"dataset_name\"],\"get_datasets\":[],\"get_dataset_thumbnail\":[\"dataset_name\"],\"get_dataset_label_data\":[\"dataset_name\"],\"get_dataset\":[\"dataset_name\"]}","util":"{\"get_current_dir\":[],\"open_directory\":[]}"}
+const ARGS_MAP = {"dataset":"{\"get_datasets\":[],\"get_dataset_thumbnail\":[\"dataset_name\"],\"get_dataset_label_data\":[\"dataset_name\"],\"get_dataset\":[\"dataset_name\"],\"preprocess_dataset\":[\"dataset_name\"]}","util":"{\"get_current_dir\":[],\"open_directory\":[]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)

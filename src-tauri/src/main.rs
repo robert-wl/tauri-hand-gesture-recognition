@@ -1,9 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-
-
-
 use taurpc::Router;
 
 use crate::dataset::api::DatasetApi;
@@ -12,14 +9,12 @@ use crate::util::api::UtilApi;
 use crate::util::api_impl::UtilApiImpl;
 
 pub mod dataset;
+mod py_utils;
 pub mod util;
 pub mod utils;
-mod py_utils;
-
 
 #[tokio::main]
 async fn main() {
-
     let router = Router::new()
         .merge(DatasetApiImpl.into_handler())
         .merge(UtilApiImpl.into_handler());
