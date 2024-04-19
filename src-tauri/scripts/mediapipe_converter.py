@@ -1,81 +1,127 @@
-import sys
+import cv2
 import numpy as np
 import os
-import cv2
-import mediapipe as mp
+import pandas as pd
+from mediapipe.python.solutions import drawing_utils, drawing_styles, hands
+
+
+def get_image(image_path) -> np.ndarray:
+    image = cv2.imread(image_path)
+    image = cv2.flip(image, 1)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
+
+
+def write_image(image, output_path):
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(output_path, image)
+
+
+def annotate_image(image, landmarks):
+    annotated_image = image.copy()
+    for landmark in landmarks:
+        drawing_utils.draw_landmarks(
+            annotated_image,
+            landmark,
+            hands.HAND_CONNECTIONS,
+            drawing_styles.get_default_hand_landmarks_style(),
+            drawing_styles.get_default_hand_connections_style()
+        )
+    return annotated_image
+
 
 class MediaPipeConverter:
-    def __init__(self):
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_drawing_styles = mp.solutions.drawing_styles
-        self.mp_hands = mp.solutions.hands
-        self.hands = self.mp_hands.Hands(
+    def __init__(self, label):
+        self.hands = hands.Hands(
             static_image_mode=False,
             max_num_hands=2,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5
         )
-
-    def get_image(self, image_path) -> np.ndarray:
-        image = cv2.imread(image_path)
-        image = cv2.flip(image, 1)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        return image
+        self.label = label
+        self.landmark_data = []
 
     def get_landmarks(self, image):
         results = self.hands.process(image)
+
         if not results.multi_hand_landmarks:
             return None
 
         return results.multi_hand_landmarks
 
-    def annotate_image(self, image, landmarks):
-        annotated_image = image.copy()
-        for landmark in landmarks:
-            self.mp_drawing.draw_landmarks(
-                annotated_image, landmark, self.mp_hands.HAND_CONNECTIONS,
-                self.mp_drawing_styles.get_default_hand_landmarks_style(),
-                self.mp_drawing_styles.get_default_hand_connections_style()
-            )
-        return annotated_image
-
-    def make_output_dir(self, output_dir):
-        dirs = output_dir.split('\\')
-        for i in range(1, len(dirs)):
-            output_dir = '\\'.join(dirs[:i])
-
-            if not os.path.exists(output_dir):
-                os.mkdir(output_dir)
-
-    def write_image(self, image, output_path):
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        self.make_output_dir(output_path)
-        cv2.imwrite(output_path, image)
-
     def process_from_directory(self, input_dir, output_dir):
         for filename in os.listdir(input_dir):
             image_path = os.path.join(input_dir, filename)
-            image = self.get_image(image_path)
+            # print(f"Processing {image_path}")
+            image = get_image(image_path)
             landmarks = self.get_landmarks(image)
-            output_path = os.path.join(output_dir, filename)
+            self.convert_to_dict(filename, landmarks)
             if landmarks is not None:
-                annotated_image = self.annotate_image(image, landmarks)
-                self.write_image(annotated_image, output_path)
-            else:
-                self.write_image(image, output_path)
-
+                annotated_image = annotate_image(image, landmarks)
+                output_path = os.path.join(output_dir, filename)
+                write_image(annotated_image, output_path)
             print("Finished Processing", flush=True)
 
+    def convert_to_dict(self, name, landmarks):
+        if landmarks is None:
+            landmarks = []
 
-def convert_images(input_dir, output_dir):
-    converter = MediaPipeConverter()
-    converter.process_from_directory(input_dir, output_dir)
+        hand_data = {
+            "Image_No": name,
+            "Label": self.label
+        }
 
+        hand_landmarks = [landmark for landmark in (landmarks[i].landmark for i in range(2) if len(landmarks) > i)]
+        hand_landmarks = np.array(hand_landmarks).flatten()
+        hand_landmarks = np.pad(hand_landmarks, (0, 42 - len(hand_landmarks)), mode='constant', constant_values=(None, None))
+
+        relative_x = 0
+        relative_y = 0
+        relative_z = 0
+
+        for i, landmark in enumerate(hand_landmarks):
+            if landmark is None:
+                hand_data[f"Landmark_{i + 1}_X"] = 0
+                hand_data[f"Landmark_{i + 1}_Y"] = 0
+                hand_data[f"Landmark_{i + 1}_Z"] = 0
+                continue
+
+            if i == 21:
+                relative_x = getattr(hand_landmarks[1], 'x', 0)
+                relative_y = getattr(hand_landmarks[1], 'y', 0)
+                relative_z = getattr(hand_landmarks[1], 'z', 0)
+
+            x = getattr(landmark, 'x', 0) - relative_x
+            y = getattr(landmark, 'y', 0) - relative_y
+            z = getattr(landmark, 'z', 0) - relative_z
+
+            hand_data[f"Landmark_{i + 1}_X"] = x
+            hand_data[f"Landmark_{i + 1}_Y"] = y
+            hand_data[f"Landmark_{i + 1}_Z"] = z
+
+        self.landmark_data.append(hand_data)
+
+    def dump_to_csv(self, output):
+        df = pd.DataFrame(self.landmark_data)
+
+        if os.path.exists(output):
+            old_df = pd.read_csv(output)
+            df = pd.concat([old_df, df], ignore_index=True)
+
+        df.to_csv(output, index=False)
 
 
 if __name__ == '__main__':
     input_dir = sys.argv[1]
     output_dir = sys.argv[2]
+    output_csv = sys.argv[3]
 
 
-    convert_images(input_dir, output_dir)
+    for label in os.listdir(input_dir):
+        real_input_dir = os.path.join(input_dir, label)
+        real_output_dir = os.path.join(output_dir, label)
+
+        label = real_input_dir.split("\\")[-1]
+        converter = MediaPipeConverter(label)
+        converter.process_from_directory(real_input_dir, real_output_dir)
+        converter.dump_to_csv(output_csv)
