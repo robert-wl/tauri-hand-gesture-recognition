@@ -3,7 +3,7 @@
 
 use taurpc::Router;
 
-use crate::dataset::api::DatasetApi;
+use crate::dataset::api::{DatasetApi, TauRpcDatasetApiEventTrigger};
 use crate::dataset::api_impl::DatasetApiImpl;
 use crate::util::api::UtilApi;
 use crate::util::api_impl::UtilApiImpl;

@@ -40,12 +40,10 @@ class MediaPipeConverter:
         return annotated_image
 
     def make_output_dir(self, output_dir):
-        print("RAW OUTPUT:", output_dir)
         dirs = output_dir.split('\\')
         for i in range(1, len(dirs)):
             output_dir = '\\'.join(dirs[:i])
 
-            print(output_dir)
             if not os.path.exists(output_dir):
                 os.mkdir(output_dir)
 
@@ -59,10 +57,14 @@ class MediaPipeConverter:
             image_path = os.path.join(input_dir, filename)
             image = self.get_image(image_path)
             landmarks = self.get_landmarks(image)
+            output_path = os.path.join(output_dir, filename)
             if landmarks is not None:
                 annotated_image = self.annotate_image(image, landmarks)
-                output_path = os.path.join(output_dir, filename)
                 self.write_image(annotated_image, output_path)
+            else:
+                self.write_image(image, output_path)
+
+            print("Finished Processing", flush=True)
 
 
 def convert_images(input_dir, output_dir):
@@ -75,6 +77,5 @@ if __name__ == '__main__':
     input_dir = sys.argv[1]
     output_dir = sys.argv[2]
 
-    print(f"Converting images from {input_dir} to {output_dir}")
 
     convert_images(input_dir, output_dir)

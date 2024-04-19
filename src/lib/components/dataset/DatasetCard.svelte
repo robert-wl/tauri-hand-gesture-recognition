@@ -10,13 +10,13 @@
 
   async function getThumbnail() {
     if (!thumbnail) {
-      thumbnail = await TauriService.getDatasetThumbnail(dataset.name);
+      thumbnail = await TauriService.getRandomDatasetImage(dataset.name);
       return;
     }
     imageElement!.style.opacity = "0";
 
     setTimeout(async () => {
-      thumbnail = await TauriService.getDatasetThumbnail(dataset.name);
+      thumbnail = await TauriService.getRandomDatasetImage(dataset.name);
       imageElement!.style.opacity = "1";
     }, 150);
   }

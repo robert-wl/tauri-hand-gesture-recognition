@@ -1,35 +1,37 @@
 <script lang="ts">
-  import type { Label } from "../../../../bindings";
+  import type { Label, ProgressPayload } from "../../../../bindings";
   import TauriService from "../../../services/tauri-service";
+  import ProgressBar from "../ProgressBar.svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { listen } from "@tauri-apps/api/event";
 
   export let datasetName: string;
   export let datasetLabel: Label;
 
-  let progress = 0;
   let thumbnail: string = "";
+  let progress: number = 0;
 
-  const stateColor = {
-    loading: "progress-warning",
-    processed: "progress-success",
-    unprocessed: "progress-base-100",
+  const getThumbnail = async () => {
+    thumbnail = await TauriService.getRandomDatasetImage(`${datasetName}/${datasetLabel.name}`);
   };
 
-  async function getThumbnail() {
-    thumbnail = await TauriService.getDatasetThumbnail(`${datasetName}/${datasetLabel.name}`);
-  }
+  const initListener = async () => {
+    listen(`progress_${datasetLabel.name}`, (event: TauriEvent<ProgressPayload>) => {
+      console.log(event.payload);
+      progress = (event.payload.current_amount / event.payload.total_amount) * 100;
+    });
+  };
 
-  getThumbnail();
-
-  let interval: ReturnType<typeof setInterval>;
+  onMount(() => {
+    getThumbnail();
+    initListener();
+  });
 </script>
 
 <button on:click>
   <div class="card min-h-40 bg-base-100 hover:bg-gray-50 shadow-xl rounded-t-none cursor-pointer duration-300 transition-all hover:-translate-y-2">
     <div class="card-title flex flex-col gap-0">
-      <progress
-        class={`progress w-full bg-base-500 h-1 ${progress === 100 ? stateColor.processed : stateColor.loading}`}
-        max="100"
-        value={progress}></progress>
+      <ProgressBar progress={datasetLabel.is_preprocessed ? 100 : progress} />
       <img
         alt="Dataset Thumbnail"
         class="object-cover rounded-sm transition-opacity rounded-t-none"

@@ -1,23 +1,14 @@
+use std::io::{BufRead, BufReader};
 use std::os::windows::process::CommandExt;
 use std::path::Path;
-use std::process::{Command, ExitStatus, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
+
+use tauri::Manager;
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 const VENV_DIR: &str = ".venv";
-pub fn create_venv() -> () {
-    let path = std::env::current_dir()
-        .unwrap()
-        .join("scripts")
-        .join("create_venv.bat");
 
-    let out = Command::new(path)
-        .spawn()
-        .expect("failed to create python venv");
-
-    println!("Output: {:?}", out.stdout);
-}
-
-pub fn run_script(script_path: &str, args: Vec<String>) -> ExitStatus {
+pub fn run_script(script_path: &Path, args: Vec<String>) -> Child {
     let venv_path = if cfg!(windows) {
         Path::new(VENV_DIR).join("Scripts").join("activate.bat")
     } else {
@@ -30,18 +21,18 @@ pub fn run_script(script_path: &str, args: Vec<String>) -> ExitStatus {
 
     values.extend(args.iter().map(|s| s.to_string()));
 
-    let mut command_args = vec!["/C", &activate_script, "&&", "python", script_path];
+    let string_path = script_path.to_str().unwrap();
+
+    let mut command_args = vec!["/C", &activate_script, "&&", "python", string_path];
 
     command_args.extend(values.iter().map(|s| s.as_str()));
 
-    let mut child = Command::new("cmd")
+    Command::new("cmd")
         .args(&command_args)
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .creation_flags(CREATE_NO_WINDOW)
         .spawn()
         .map_err(|e| format!("Failed to execute Python script: {}", e))
-        .unwrap();
-
-    child.wait().expect("failed to wait on child")
+        .unwrap()
 }

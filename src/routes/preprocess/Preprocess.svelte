@@ -3,6 +3,7 @@
   import TauriService from "../../services/tauri-service";
   import DataPreviewModal from "../../lib/components/dataset/DataPreviewModal.svelte";
   import DatasetLabelCard from "../../lib/components/dataset/DatasetLabelCard.svelte";
+  import { createTauRPCProxy } from "../../../bindings";
 
   export let name: string = "";
 
@@ -21,6 +22,10 @@
     chosenLabel = label;
     dialog.showModal();
   };
+
+  async function test() {
+    TauriService.preprocessDataset(name);
+  }
 
   $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
 
@@ -49,7 +54,11 @@
             <div class="text-center">Total Images: {dataLength}</div>
             <div class="text-center">Processed Images: 0/{dataLength}</div>
           </div>
-          <button class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"> Preprocess Dataset </button>
+          <button
+            class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+            on:click={test}>
+            Preprocess Dataset
+          </button>
         </div>
       </div>
     </div>
@@ -63,7 +72,8 @@
 
       <DataPreviewModal
         bind:dialog
-        datasetLabel={chosenLabel} />
+        datasetLabel={chosenLabel}
+        datasetName={name} />
     </div>
   </div>
 </div>

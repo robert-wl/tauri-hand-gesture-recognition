@@ -1,20 +1,23 @@
-use std::env::current_dir;
-use base64::Engine;
 use std::fs;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-use crate::dataset::api::DatasetApi;
-use crate::dataset::dataset::{Dataset, GeneralDataset, Label};
-use crate::utils::{get_directory_content, FileType};
+use base64::Engine;
 use base64::engine::general_purpose;
 use rand::random;
-use crate::dataset::api::TauRpcDatasetApiInputs::get_data;
+use tauri::Manager;
+
+use crate::dataset::api::DatasetApi;
+use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ProgressPayload};
+use crate::py_utils::run_script;
+use crate::utils::{FileType, get_directory_content};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
 
 const DIRECTORY: &str = "dataset";
 const PROCESSED_DIRECTORY: &str = "processed";
+const CONVERTER_SCRIPT: &str = "mediapipe_converter.py";
 
 #[taurpc::resolvers]
 impl DatasetApi for DatasetApiImpl {
@@ -46,7 +49,6 @@ impl DatasetApi for DatasetApiImpl {
                 dataset.data_amount += get_directory_content(&dir, &FileType::File).len() as u16;
             }
 
-
             datasets.push(dataset);
         }
 
@@ -54,10 +56,7 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get(self, name: String) -> Result<Dataset, String> {
-        let labels = self.clone()
-            .get_labels(name.clone())
-            .await
-            .unwrap();
+        let labels = self.clone().get_labels(name.clone()).await.unwrap();
 
         let dataset = Dataset {
             name: name.to_string(),
@@ -88,10 +87,17 @@ impl DatasetApi for DatasetApiImpl {
                 .await
                 .unwrap();
 
+            let is_preprocessed = self
+                .clone()
+                .get_processed_image(name.clone(), dataset_label.clone(), data[0].clone())
+                .await
+                .unwrap()
+                .is_some();
 
             let dataset_label = Label {
                 name: dataset_label,
-                data
+                data,
+                is_preprocessed,
             };
 
             data_label.push(dataset_label);
@@ -105,7 +111,8 @@ impl DatasetApi for DatasetApiImpl {
 
         let file_dirs = get_directory_content(&label_dir, &FileType::File);
 
-        let data = file_dirs.iter()
+        let data = file_dirs
+            .iter()
             .map(|file| {
                 let file_name = file
                     .file_name()
@@ -121,20 +128,20 @@ impl DatasetApi for DatasetApiImpl {
         Ok(data)
     }
 
-    async fn get_random_thumbnail(self, path: String) -> Result<String, String> {
+    async fn get_random_image(self, path: String) -> Result<String, String> {
         let dataset_dir = Path::new(DIRECTORY).join(path);
 
         let mut current_dir = dataset_dir.clone();
-        while true {
+        loop {
             let label_dirs = get_directory_content(&current_dir, &FileType::Directory);
 
             if label_dirs.is_empty() {
                 break;
             }
-            
+
             let random_number = random::<usize>() % label_dirs.len();
             let random_dir = label_dirs.get(random_number).unwrap();
-            
+
             current_dir = random_dir.clone();
         }
 
@@ -149,12 +156,7 @@ impl DatasetApi for DatasetApiImpl {
         Ok(base64_thumbnail)
     }
 
-    async fn get_thumbnail(
-        self,
-        name: String,
-        label: String,
-        data: String,
-    ) -> Result<String, String> {
+    async fn get_image(self, name: String, label: String, data: String) -> Result<String, String> {
         let file_dir = Path::new(DIRECTORY).join(name).join(label).join(data);
 
         let thumbnail = fs::read(file_dir).expect("failed to read thumbnail");
@@ -164,7 +166,7 @@ impl DatasetApi for DatasetApiImpl {
         Ok(base64_thumbnail)
     }
 
-    async fn get_processed_thumbnail(
+    async fn get_processed_image(
         self,
         name: String,
         label: String,
@@ -186,51 +188,66 @@ impl DatasetApi for DatasetApiImpl {
         Ok(Option::from(base64_thumbnail))
     }
 
-    async fn preprocess(self, dataset_name: String) -> Result<(), String> {
-        let in_dir = Path::new(DIRECTORY).join(dataset_name.clone());
-        let out_dir = Path::new(PROCESSED_DIRECTORY).join(dataset_name.clone());
+    async fn preprocess(self, name: String, app_handle: tauri::AppHandle) -> Result<(), String> {
+        let in_path = Path::new(DIRECTORY).join(name.clone());
+        let out_path = Path::new(PROCESSED_DIRECTORY).join(name.clone());
 
-        let dir_list = get_directory_content(&in_dir, &FileType::Directory);
+        let label_dirs = get_directory_content(&in_path, &FileType::Directory);
 
-        // for dir in dir_list {
-        //     println!("dir: {:?}", dir);
-        //     let dir_name = dir.split("/").last().unwrap();
-        //     let fin_in_dir = format!("{}\\{}", in_dir, dir_name);
-        //     let fin_out_dir = format!("{}\\{}", out_dir, dir_name);
-        //
-        //     let script_path = "scripts\\mediapipe_converter.py";
-        //
-        //     let status = run_script(script_path, vec![fin_in_dir, fin_out_dir]);
-        //
-        //     if !status.success() {
-        //         return Err("Failed to preprocess dataset".to_string());
-        //     }
-        // }
+        for dir in label_dirs {
+            let data_count = get_directory_content(&dir, &FileType::File).len() as u16;
+            let label = dir
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+            let in_dir_str = dir
+                .to_str()
+                .unwrap()
+                .to_string();
+            let out_dir_str = out_path
+                .join(label.clone())
+                .to_str()
+                .unwrap()
+                .to_string();
+
+            let script_path = Path::new("scripts").join(CONVERTER_SCRIPT);
+
+            let mut child = run_script(&script_path, vec![in_dir_str, out_dir_str]);
+
+            let stdout = child.stdout.take().unwrap();
+            let reader = BufReader::new(stdout);
+
+            for (current_amount, line) in reader.lines().enumerate() {
+                let payload = ProgressPayload {
+                    name: name.clone(),
+                    label: label.clone(),
+                    current_amount: (current_amount + 1) as u16,
+                    total_amount: data_count,
+                };
+
+                app_handle
+                    .emit_all(format!("progress_{}", label).as_str(), payload)
+                    .expect("failed to emit event");
+            }
+
+            let stderr = child.stderr.take().unwrap();
+            let reader = BufReader::new(stderr);
+
+            for line in reader.lines() {
+                println!("{}", line.unwrap());
+            }
+
+            println!("Waiting for child to finish");
+
+            let status = child.wait().expect("failed to wait on child");
+
+            if !status.success() {
+                return Err("Failed to preprocess dataset".to_string());
+            }
+        }
 
         Ok(())
     }
-
-    // async fn preprocess_dataset(self, dataset_name: String, label: String) -> Result<(), String> {
-    //     let in_dir = format!("{}\\{}", DIRECTORY, dataset_name);
-    //     let out_dir = format!("processed\\{}", dataset_name);
-    //
-    //     let dir_list = get_directory_content(&in_dir, &FileType::Directory);
-    //
-    //     for dir in dir_list {
-    //         println!("dir: {:?}", dir);
-    //         let dir_name = dir.split("/").last().unwrap();
-    //         let fin_in_dir = format!("{}\\{}", in_dir, dir_name);
-    //         let fin_out_dir = format!("{}\\{}", out_dir, dir_name);
-    //
-    //         let script_path = "scripts\\mediapipe_converter.py";
-    //
-    //         let status = run_script(script_path, vec![fin_in_dir, fin_out_dir]);
-    //
-    //         if !status.success() {
-    //             return Err("Failed to preprocess dataset".to_string());
-    //         }
-    //     }
-    //
-    //     Ok(())
-    // }
 }
