@@ -16,8 +16,7 @@
   };
 
   const initListener = async () => {
-    listen(`progress_${datasetLabel.name}`, (event: TauriEvent<ProgressPayload>) => {
-      console.log(event.payload);
+    await listen(`progress_${datasetLabel.name}`, (event: TauriEvent<ProgressPayload>) => {
       progress = (event.payload.current_amount / event.payload.total_amount) * 100;
     });
   };
@@ -26,12 +25,14 @@
     getThumbnail();
     initListener();
   });
+
+  $: realProgress = datasetLabel && datasetLabel.is_preprocessed ? 100 : progress;
 </script>
 
 <button on:click>
   <div class="card min-h-40 bg-base-100 hover:bg-gray-50 shadow-xl rounded-t-none cursor-pointer duration-300 transition-all hover:-translate-y-2">
     <div class="card-title flex flex-col gap-0">
-      <ProgressBar progress={datasetLabel.is_preprocessed ? 100 : progress} />
+      <ProgressBar progress={realProgress} />
       <img
         alt="Dataset Thumbnail"
         class="object-cover rounded-sm transition-opacity rounded-t-none"

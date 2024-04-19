@@ -9,6 +9,7 @@
 
   let dialog: HTMLDialogElement;
   let chosenLabel: Optional<Label>;
+  let isLoading = false;
   let dataset: Dataset = {
     name: "",
     labels: [],
@@ -23,9 +24,18 @@
     dialog.showModal();
   };
 
-  async function test() {
-    TauriService.preprocessDataset(name);
-  }
+  const preprocessDataset = async () => {
+    isLoading = true;
+
+    dataset.labels = dataset.labels.map((label) => ({
+      ...label,
+      is_preprocessed: false,
+    }));
+
+    await TauriService.preprocessDataset(name);
+
+    isLoading = false;
+  };
 
   $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
 
@@ -54,11 +64,19 @@
             <div class="text-center">Total Images: {dataLength}</div>
             <div class="text-center">Processed Images: 0/{dataLength}</div>
           </div>
-          <button
-            class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
-            on:click={test}>
-            Preprocess Dataset
-          </button>
+          {#if isLoading}
+            <button
+              class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+              disabled>
+              Loading...
+            </button>
+          {:else}
+            <button
+              class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+              on:click={preprocessDataset}>
+              Preprocess Dataset
+            </button>
+          {/if}
         </div>
       </div>
     </div>

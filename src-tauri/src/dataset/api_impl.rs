@@ -10,7 +10,7 @@ use tauri::Manager;
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ProgressPayload};
 use crate::py_utils::run_script;
-use crate::utils::{FileType, get_directory_content};
+use crate::utils::{FileType, get_directory_content, remove_directory_content};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
@@ -192,6 +192,8 @@ impl DatasetApi for DatasetApiImpl {
         let in_path = Path::new(DIRECTORY).join(name.clone());
         let out_path = Path::new(PROCESSED_DIRECTORY).join(name.clone());
 
+        remove_directory_content(&out_path);
+
         let label_dirs = get_directory_content(&in_path, &FileType::Directory);
 
         for dir in label_dirs {
@@ -219,7 +221,7 @@ impl DatasetApi for DatasetApiImpl {
             let stdout = child.stdout.take().unwrap();
             let reader = BufReader::new(stdout);
 
-            for (current_amount, line) in reader.lines().enumerate() {
+            for (current_amount, _) in reader.lines().enumerate() {
                 let payload = ProgressPayload {
                     name: name.clone(),
                     label: label.clone(),

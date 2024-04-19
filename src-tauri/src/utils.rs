@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+
 use walkdir::WalkDir;
 
 pub async fn check_or_create(path: &str) {
@@ -27,6 +28,10 @@ pub fn get_directory_content(dir: &Path, scan_type: &FileType) -> Vec<PathBuf> {
         })
         .map(|e| e.path().to_path_buf())
         .collect()
+}
+
+pub fn remove_directory_content(dir: &Path) {
+    fs::remove_dir_all(dir).unwrap();
 }
 
 // pub fn emit_event(event: &str, payload: &str) -> () {
