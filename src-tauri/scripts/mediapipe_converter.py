@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 import pandas as pd
+import sys
 from mediapipe.python.solutions import drawing_utils, drawing_styles, hands
 
 
@@ -13,6 +14,7 @@ def get_image(image_path) -> np.ndarray:
 
 
 def write_image(image, output_path):
+    make_dir(output_path)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     cv2.imwrite(output_path, image)
 
@@ -28,6 +30,15 @@ def annotate_image(image, landmarks):
             drawing_styles.get_default_hand_connections_style()
         )
     return annotated_image
+
+def make_dir(path):
+    path_list = path.split("\\")
+    current_path = ""
+
+    for path in path_list[:-1]:
+        current_path = os.path.join(current_path, path)
+        if not os.path.exists(current_path):
+            os.mkdir(current_path)
 
 
 class MediaPipeConverter:
@@ -52,7 +63,6 @@ class MediaPipeConverter:
     def process_from_directory(self, input_dir, output_dir):
         for filename in os.listdir(input_dir):
             image_path = os.path.join(input_dir, filename)
-            # print(f"Processing {image_path}")
             image = get_image(image_path)
             landmarks = self.get_landmarks(image)
             self.convert_to_dict(filename, landmarks)
@@ -103,11 +113,12 @@ class MediaPipeConverter:
 
     def dump_to_csv(self, output):
         df = pd.DataFrame(self.landmark_data)
-
+        
+        make_dir(output)
         if os.path.exists(output):
             old_df = pd.read_csv(output)
             df = pd.concat([old_df, df], ignore_index=True)
-
+        
         df.to_csv(output, index=False)
 
 
@@ -117,11 +128,10 @@ if __name__ == '__main__':
     output_csv = sys.argv[3]
 
 
-    for label in os.listdir(input_dir):
-        real_input_dir = os.path.join(input_dir, label)
-        real_output_dir = os.path.join(output_dir, label)
+    label = input_dir.split("\\")[-1]
 
-        label = real_input_dir.split("\\")[-1]
-        converter = MediaPipeConverter(label)
-        converter.process_from_directory(real_input_dir, real_output_dir)
-        converter.dump_to_csv(output_csv)
+    converter = MediaPipeConverter(label)
+    converter.process_from_directory(input_dir, output_dir)
+    converter.dump_to_csv(output_csv)
+
+
