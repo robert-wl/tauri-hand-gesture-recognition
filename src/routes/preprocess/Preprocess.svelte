@@ -3,12 +3,9 @@
   import TauriService from "../../services/tauri-service";
   import DataPreviewModal from "../../lib/components/dataset/DataPreviewModal.svelte";
   import DatasetLabelCard from "../../lib/components/dataset/DatasetLabelCard.svelte";
-  import { createTauRPCProxy } from "../../../bindings";
 
   export let name: string = "";
 
-  let dialog: HTMLDialogElement;
-  let chosenLabel: Optional<Label>;
   let isLoading = false;
   let dataset: Dataset = {
     name: "",
@@ -17,11 +14,6 @@
 
   const getDataset = async () => {
     dataset = await TauriService.getDataset(name);
-  };
-
-  const openModal = (label: Label) => {
-    chosenLabel = label;
-    dialog.showModal();
   };
 
   const preprocessDataset = async () => {
@@ -83,15 +75,9 @@
     <div class="w-full h-full grid 2xl:grid-cols-6 grid-cols-4 gap-10">
       {#each dataset.labels as label}
         <DatasetLabelCard
-          on:click={() => openModal(label)}
           datasetName={name}
           datasetLabel={label} />
       {/each}
-
-      <DataPreviewModal
-        bind:dialog
-        datasetLabel={chosenLabel}
-        datasetName={name} />
     </div>
   </div>
 </div>

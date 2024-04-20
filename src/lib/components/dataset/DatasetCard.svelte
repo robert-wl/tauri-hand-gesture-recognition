@@ -49,7 +49,8 @@
     </div>
     <hr class="my-2 w-full border-gray-200" />
     <h2 class="card-title text-xl text-center pb-2">{dataset.name}</h2>
-    <p class="text-center">{dataset.label_amount} Images</p>
+    <p class="text-center">{dataset.label_amount} Labels</p>
+    <p class="text-center">{dataset.data_amount} Images</p>
     <Link
       class="btn btn-primary btn-sm min-h-0 h-fit font-bold text-white py-2.5 mt-2 w-full"
       to={`/preprocess/${dataset.name}`}>

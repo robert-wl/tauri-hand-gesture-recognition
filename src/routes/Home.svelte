@@ -2,7 +2,6 @@
   import MenuCard from "../lib/components/home/MenuCard.svelte";
   import { createTauRPCProxy } from "../../bindings.js";
   import { Link } from "svelte-routing";
-  import TauriService from "../services/tauri-service";
 
   async function test() {
     const tsc = await createTauRPCProxy();

@@ -7,14 +7,19 @@ export default class TauriService extends BaseService {
     return ipc.dataset.get_all();
   }
 
-  public static async getCurrentDirectory(): Promise<string> {
-    const ipc = await this.getTauRPCProxy();
-    return ipc.util.get_current_dir();
-  }
-
   public static async getRandomDatasetImage(dataName: string): Promise<string> {
     const ipc = await this.getTauRPCProxy();
     return ipc.dataset.get_random_image(dataName);
+  }
+
+  public static async getRawDatasetImage(dataName: string, labelName: string, imageName: string): Promise<string> {
+    const ipc = await this.getTauRPCProxy();
+    return ipc.dataset.get_image(dataName, labelName, imageName);
+  }
+
+  public static async getProcessedDatasetImage(dataName: string, labelName: string, imageName: string): Promise<Nullable<string>> {
+    const ipc = await this.getTauRPCProxy();
+    return ipc.dataset.get_processed_image(dataName, labelName, imageName);
   }
 
   public static async getDataset(dataName: string): Promise<Dataset> {

@@ -3,9 +3,9 @@
   import DatasetCard from "../../lib/components/dataset/DatasetCard.svelte";
   import EmptyDatasetCard from "../../lib/components/dataset/EmptyDatasetCard.svelte";
 
-  async function fetchData() {
+  const fetchData = async () => {
     return await TauriService.getDatasets();
-  }
+  };
 </script>
 
 <div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
