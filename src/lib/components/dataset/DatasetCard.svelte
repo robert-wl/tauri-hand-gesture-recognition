@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { GeneralDataset } from "../../../../bindings";
-  import TauriService from "../../../services/tauri-service";
+  import DatasetService from "../../../services/dataset-service";
   import { Link } from "svelte-routing";
   import RefreshIcon from "../icons/RefreshIcon.svelte";
 
@@ -10,13 +10,13 @@
 
   async function getThumbnail() {
     if (!thumbnail) {
-      thumbnail = await TauriService.getRandomDatasetImage(dataset.name);
+      thumbnail = await DatasetService.getRandomDatasetImage(dataset.name);
       return;
     }
     imageElement!.style.opacity = "0";
 
     setTimeout(async () => {
-      thumbnail = await TauriService.getRandomDatasetImage(dataset.name);
+      thumbnail = await DatasetService.getRandomDatasetImage(dataset.name);
       imageElement!.style.opacity = "1";
     }, 150);
   }

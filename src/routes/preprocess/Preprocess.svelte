@@ -1,11 +1,15 @@
 <script lang="ts">
   import type { Dataset, Label } from "../../../bindings";
-  import TauriService from "../../services/tauri-service";
+  import DatasetService from "../../services/dataset-service";
   import DataPreviewModal from "../../lib/components/dataset/DataPreviewModal.svelte";
   import DatasetLabelCard from "../../lib/components/dataset/DatasetLabelCard.svelte";
+  import Tab from "../../lib/components/Tab.svelte";
 
   export let name: string = "";
 
+  const tabContent = ["Raw", "Preprocessed"];
+
+  let activeTab = 0;
   let isLoading = false;
   let dataset: Dataset = {
     name: "",
@@ -13,7 +17,7 @@
   };
 
   const getDataset = async () => {
-    dataset = await TauriService.getDataset(name);
+    dataset = await DatasetService.getDataset(name);
   };
 
   const preprocessDataset = async () => {
@@ -24,9 +28,13 @@
       is_preprocessed: false,
     }));
 
-    await TauriService.preprocessDataset(name);
+    await DatasetService.preprocessDataset(name);
 
     isLoading = false;
+  };
+
+  const setActiveTab = (index: number) => {
+    activeTab = index;
   };
 
   $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
@@ -36,12 +44,16 @@
 
 <div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
   <div class="flex flex-col py-5 gap-5 items-center">
-    <h1 class="text-4xl font-bold text-center mt-16">Datasets</h1>
-    <p class="text-center text-lg max-w-[40rem]">Choose your dataset from the list of available datasets.</p>
+    <h1 class="text-4xl font-bold text-center mt-16">Preprocess</h1>
+    <p class="text-center text-lg max-w-[40rem]">Detect the landmarks in the images and collect the data for each image.</p>
   </div>
   <div class="w-full flex flex-row justify-start items-start gap-10 p-4">
     <div>
       <div class="card w-64 min-h-80 bg-base-100 shadow-xl sticky top-0 border-primary border-t-2">
+        <Tab
+          {activeTab}
+          {setActiveTab}
+          {tabContent} />
         <div class="card-title pb-0 py-4 flex flex-col items-center justify-between">
           <img
             alt="dataset"

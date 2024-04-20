@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Label, ProgressPayload } from "../../../../bindings";
-  import TauriService from "../../../services/tauri-service";
+  import DatasetService from "../../../services/dataset-service";
   import ProgressBar from "../ProgressBar.svelte";
   import { onDestroy, onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
@@ -14,11 +14,11 @@
   let progress: number = 0;
 
   const getRawImage = async (image: string) => {
-    return await TauriService.getRawImage(datasetName, datasetLabel.name, image);
+    return await DatasetService.getRawImage(datasetName, datasetLabel.name, image);
   };
 
   const getProcessedImage = async (image: string) => {
-    return await TauriService.getProcessedImage(datasetName, datasetLabel.name, image);
+    return await DatasetService.getProcessedImage(datasetName, datasetLabel.name, image);
   };
 
   const initListener = async () => {

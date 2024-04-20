@@ -1,9 +1,9 @@
 <script lang="ts">
   import FileDirectoryIcon from "../icons/FileDirectoryIcon.svelte";
-  import TauriService from "../../../services/tauri-service";
+  import DatasetService from "../../../services/dataset-service";
 
   function openDirectory() {
-    TauriService.openDatasetDirectory();
+    DatasetService.openDatasetDirectory();
   }
 </script>
 

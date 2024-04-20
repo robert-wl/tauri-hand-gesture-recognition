@@ -23,15 +23,15 @@
         text="Preprocess Hand Images with MediaPipe Framework"
         title="Data Preprocessing" />
     </Link>
-    <button on:click={test}>
+    <Link to="/training">
       <MenuCard
         imageUrl="/home/model-training.png"
         text="Train a Support Vector Machine Model with to classify Hand Gestures"
         title="Model Training" />
-    </button>
+    </Link>
     <MenuCard
       imageUrl="/home/model-testing.png"
-      text="Test the Model on New Hand Gestures"
+      text="View Model Performance Metrics and Confusion Matrix and Test the Model on New Hand Gestures"
       title="Model Testing" />
   </div>
 </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Label } from "../../../../bindings";
-  import TauriService from "../../../services/tauri-service";
+  import DatasetService from "../../../services/dataset-service";
   import SearchIcon from "../icons/SearchIcon.svelte";
   import RefreshIcon from "../icons/RefreshIcon.svelte";
 
@@ -17,8 +17,8 @@
     if (!datasetLabel) {
       return;
     }
-    rawImage = await TauriService.getRawImage(datasetName, datasetLabel.name, chosenData);
-    processedImage = await TauriService.getProcessedImage(datasetName, datasetLabel.name, chosenData);
+    rawImage = await DatasetService.getRawImage(datasetName, datasetLabel.name, chosenData);
+    processedImage = await DatasetService.getProcessedImage(datasetName, datasetLabel.name, chosenData);
   };
 
   $: if (datasetLabel) {
