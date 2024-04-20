@@ -18,6 +18,7 @@ pub struct DatasetApiImpl;
 const DIRECTORY: &str = "dataset";
 const PROCESSED_DIRECTORY: &str = "processed";
 const CONVERTER_SCRIPT: &str = "mediapipe_converter.py";
+const OUTPUT_CSV: &str = "output.csv";
 
 #[taurpc::resolvers]
 impl DatasetApi for DatasetApiImpl {
@@ -213,10 +214,15 @@ impl DatasetApi for DatasetApiImpl {
                 .to_str()
                 .unwrap()
                 .to_string();
+            let out_csv_str = out_path
+                .join(OUTPUT_CSV)
+                .to_str()
+                .unwrap()
+                .to_string();
 
             let script_path = Path::new("scripts").join(CONVERTER_SCRIPT);
 
-            let mut child = run_script(&script_path, vec![in_dir_str, out_dir_str]);
+            let mut child = run_script(&script_path, vec![in_dir_str, out_dir_str, out_csv_str]);
 
             let stdout = child.stdout.take().unwrap();
             let reader = BufReader::new(stdout);

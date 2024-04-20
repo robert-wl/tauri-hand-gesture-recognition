@@ -31,7 +31,7 @@ pub fn get_directory_content(dir: &Path, scan_type: &FileType) -> Vec<PathBuf> {
 }
 
 pub fn remove_directory_content(dir: &Path) {
-    fs::remove_dir_all(dir).unwrap();
+    fs::remove_dir_all(dir).unwrap_or(());
 }
 
 // pub fn emit_event(event: &str, payload: &str) -> () {

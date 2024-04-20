@@ -3,12 +3,11 @@ import numpy as np
 import os
 import pandas as pd
 import sys
-from mediapipe.python.solutions import drawing_utils, drawing_styles, hands
-
+from mediapipe.python.solutions import drawing_utils, hands
+from mediapipe.python.solutions.drawing_utils import DrawingSpec
 
 def get_image(image_path) -> np.ndarray:
     image = cv2.imread(image_path)
-    image = cv2.flip(image, 1)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image
 
@@ -26,8 +25,8 @@ def annotate_image(image, landmarks):
             annotated_image,
             landmark,
             hands.HAND_CONNECTIONS,
-            drawing_styles.get_default_hand_landmarks_style(),
-            drawing_styles.get_default_hand_connections_style()
+            DrawingSpec(color=(255, 0, 0), thickness=10, circle_radius=10),
+            DrawingSpec(color=(0, 255, 0), thickness=5, circle_radius=2),
         )
     return annotated_image
 
@@ -66,10 +65,12 @@ class MediaPipeConverter:
             image = get_image(image_path)
             landmarks = self.get_landmarks(image)
             self.convert_to_dict(filename, landmarks)
+            output_path = os.path.join(output_dir, filename)
             if landmarks is not None:
                 annotated_image = annotate_image(image, landmarks)
-                output_path = os.path.join(output_dir, filename)
                 write_image(annotated_image, output_path)
+            else:
+                write_image(image, output_path)
             print("Finished Processing", flush=True)
 
     def convert_to_dict(self, name, landmarks):
