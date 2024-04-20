@@ -34,7 +34,10 @@ def make_dir(path):
     path_list = path.split("\\")
     current_path = ""
 
-    for path in path_list[:-1]:
+    if path_list[-1].contains("."):
+        path_list = path_list[:-1]
+
+    for path in path_list:
         current_path = os.path.join(current_path, path)
         if not os.path.exists(current_path):
             os.mkdir(current_path)
@@ -114,12 +117,12 @@ class MediaPipeConverter:
 
     def dump_to_csv(self, output):
         df = pd.DataFrame(self.landmark_data)
-        
+
         make_dir(output)
         if os.path.exists(output):
             old_df = pd.read_csv(output)
             df = pd.concat([old_df, df], ignore_index=True)
-        
+
         df.to_csv(output, index=False)
 
 
