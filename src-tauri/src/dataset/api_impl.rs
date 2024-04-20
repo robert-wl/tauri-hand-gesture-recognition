@@ -1,31 +1,32 @@
 use std::fs;
+use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-use base64::Engine;
 use base64::engine::general_purpose;
+use base64::Engine;
 use rand::random;
 use tauri::Manager;
 
+use crate::constants::{
+    CONVERTER_SCRIPT, DATASET_DIRECTORY, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV,
+    SCRIPTS_DIRECTORY,
+};
 use crate::dataset::api::DatasetApi;
-use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ProgressPayload};
+use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ModelDataset, ProgressPayload};
 use crate::py_utils::run_script;
-use crate::utils::{FileType, get_directory_content, remove_directory_content};
+use crate::utils::{get_directory_content, remove_directory_content, FileType};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
-
-const DIRECTORY: &str = "dataset";
-const PROCESSED_DIRECTORY: &str = "processed";
-const CONVERTER_SCRIPT: &str = "mediapipe_converter.py";
-const OUTPUT_CSV: &str = "output.csv";
 
 #[taurpc::resolvers]
 impl DatasetApi for DatasetApiImpl {
     async fn get_all(self) -> Result<Vec<GeneralDataset>, String> {
         let mut datasets = Vec::new();
 
-        let dataset_dirs = get_directory_content(Path::new(DIRECTORY), &FileType::Directory);
+        let dataset_dirs =
+            get_directory_content(Path::new(DATASET_DIRECTORY), &FileType::Directory);
 
         for dir in dataset_dirs {
             let name = dir
@@ -56,6 +57,40 @@ impl DatasetApi for DatasetApiImpl {
         Ok(datasets)
     }
 
+    async fn get_all_model_dataset(self) -> Result<Vec<ModelDataset>, String> {
+        let processed_dir = Path::new(PROCESSED_DIRECTORY);
+
+        let dataset_dirs = get_directory_content(processed_dir, &FileType::Directory);
+
+        let model_datasets: Vec<ModelDataset> = dataset_dirs
+            .iter()
+            .filter_map(|dataset| {
+                let csv = dataset.join(PROCESSED_OUTPUT_CSV);
+                let file = File::open(csv);
+
+                if file.is_ok() {
+                    let name = dataset
+                        .file_name()
+                        .unwrap()
+                        .to_os_string()
+                        .into_string()
+                        .unwrap();
+
+                    let mut rdt = csv::Reader::from_reader(file.unwrap());
+
+                    let data_amount = rdt.records().count() as u16;
+
+                    let model_dataset = ModelDataset { name, data_amount };
+
+                    return Some(model_dataset);
+                }
+                None
+            })
+            .collect();
+
+        Ok(model_datasets)
+    }
+
     async fn get(self, name: String) -> Result<Dataset, String> {
         let labels = self.clone().get_labels(name.clone()).await.unwrap();
 
@@ -68,7 +103,7 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_labels(self, name: String) -> Result<Vec<Label>, String> {
-        let dataset_dir = Path::new(DIRECTORY).join(name.clone());
+        let dataset_dir = Path::new(DATASET_DIRECTORY).join(name.clone());
 
         let dir_list = get_directory_content(&dataset_dir, &FileType::Directory);
 
@@ -108,7 +143,9 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_data(self, name: String, label: String) -> Result<Vec<String>, String> {
-        let label_dir = Path::new(DIRECTORY).join(name.clone()).join(label.clone());
+        let label_dir = Path::new(DATASET_DIRECTORY)
+            .join(name.clone())
+            .join(label.clone());
 
         let file_dirs = get_directory_content(&label_dir, &FileType::File);
 
@@ -130,7 +167,7 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_random_image(self, path: String) -> Result<String, String> {
-        let dataset_dir = Path::new(DIRECTORY).join(path);
+        let dataset_dir = Path::new(DATASET_DIRECTORY).join(path);
 
         let mut current_dir = dataset_dir.clone();
         loop {
@@ -158,7 +195,10 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_image(self, name: String, label: String, data: String) -> Result<String, String> {
-        let file_dir = Path::new(DIRECTORY).join(name).join(label).join(data);
+        let file_dir = Path::new(DATASET_DIRECTORY)
+            .join(name)
+            .join(label)
+            .join(data);
 
         let thumbnail = fs::read(file_dir).expect("failed to read thumbnail");
 
@@ -190,7 +230,7 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn preprocess(self, name: String, app_handle: tauri::AppHandle) -> Result<(), String> {
-        let in_path = Path::new(DIRECTORY).join(name.clone());
+        let in_path = Path::new(DATASET_DIRECTORY).join(name.clone());
         let out_path = Path::new(PROCESSED_DIRECTORY).join(name.clone());
 
         remove_directory_content(&out_path);
@@ -199,28 +239,16 @@ impl DatasetApi for DatasetApiImpl {
 
         for dir in label_dirs {
             let data_count = get_directory_content(&dir, &FileType::File).len() as u16;
-            let label = dir
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
-            let in_dir_str = dir
-                .to_str()
-                .unwrap()
-                .to_string();
-            let out_dir_str = out_path
-                .join(label.clone())
-                .to_str()
-                .unwrap()
-                .to_string();
+            let label = dir.file_name().unwrap().to_str().unwrap().to_string();
+            let in_dir_str = dir.to_str().unwrap().to_string();
+            let out_dir_str = out_path.join(label.clone()).to_str().unwrap().to_string();
             let out_csv_str = out_path
-                .join(OUTPUT_CSV)
+                .join(PROCESSED_OUTPUT_CSV)
                 .to_str()
                 .unwrap()
                 .to_string();
 
-            let script_path = Path::new("scripts").join(CONVERTER_SCRIPT);
+            let script_path = Path::new(SCRIPTS_DIRECTORY).join(CONVERTER_SCRIPT);
 
             let mut child = run_script(&script_path, vec![in_dir_str, out_dir_str, out_csv_str]);
 

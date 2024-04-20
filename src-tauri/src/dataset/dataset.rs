@@ -1,4 +1,10 @@
 #[taurpc::ipc_type]
+pub struct ModelDataset {
+    pub name: String,
+    pub data_amount: u16,
+}
+
+#[taurpc::ipc_type]
 pub struct GeneralDataset {
     pub name: String,
     pub label_amount: u16,

@@ -1,8 +1,9 @@
-use crate::dataset::dataset::{Dataset, GeneralDataset, Label};
+use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ModelDataset};
 
 #[taurpc::procedures(path = "dataset")]
 pub trait DatasetApi {
     async fn get_all() -> Result<Vec<GeneralDataset>, String>;
+    async fn get_all_model_dataset() -> Result<Vec<ModelDataset>, String>;
     async fn get_random_image(path: String) -> Result<String, String>;
     async fn get_labels(dataset_name: String) -> Result<Vec<Label>, String>;
     async fn get_data(dataset_name: String, label_name: String) -> Result<Vec<String>, String>;
