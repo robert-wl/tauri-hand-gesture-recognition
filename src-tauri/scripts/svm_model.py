@@ -18,14 +18,14 @@ ZERO_PAD_CONSTANT = 10e-6
 DEFAULT_MODEL_NAME = 'model.pkl'
 DEFAULT_OUTPUT_PATH = 'models'
 DEFAULT_CONFUSION_MATRIX_NAME = 'confusion_matrix.png'
-DEFAULT_JSON_NAME = 'output.json'
+DEFAULT_JSON_NAME = 'specification.json'
 
 
 def make_dir(path):
     path_list = path.split("\\")
     current_path = ""
 
-    if path_list[-1].contains("."):
+    if path_list[-1].find('.') != -1:
         path_list = path_list[:-1]
 
     for path in path_list:
@@ -47,7 +47,7 @@ def preprocess_data(raw_data: DataFrame) -> (ndarray, ndarray, ndarray):
 
     data_class = raw_data['Label'].unique()
 
-    print(f'Data Class: {data_class}')
+    # print(f'Data Class: {data_class}')
     return np_data, label, data_class
 
 
@@ -65,9 +65,15 @@ def evaluate_model(model: svm.SVC, data_test: ndarray, label_test: ndarray, data
     f1 = f1_score(label_test, data_prediction, average='weighted')
     cm = confusion_matrix(label_test, data_prediction)
 
-    plot_heatmap(cm, data_class)
+    plot_heatmap(cm, data_class, model_name)
 
-    report = classification_report(label_test, data_prediction, target_names=data_class)
+    report: dict = classification_report(label_test, data_prediction, target_names=data_class, output_dict=True)
+
+    # print(classification_report(label_test, data_prediction, target_names=data_class))
+    report_accuracy = report.pop('accuracy')
+    report_macro_avg = report.pop('macro avg')
+    report_weighted_avg = report.pop('weighted avg')
+
 
     output_json = {
         'accuracy': accuracy,
@@ -75,24 +81,44 @@ def evaluate_model(model: svm.SVC, data_test: ndarray, label_test: ndarray, data
         'recall': recall,
         'f1': f1,
         'confusion_matrix': cm.tolist(),
-        'classification_report': report
+        'classification_report': {
+            'class': report,
+            'accuracy': report_accuracy,
+            'macro_avg': report_macro_avg,
+            'weighted_avg': report_weighted_avg
+        }
     }
 
     return output_json
 
 
+def save_model_specifications(model: svm.SVC, dataset_name: str, model_name: str, data_test: ndarray, label_test: ndarray, data_class: ndarray) -> None:
+    output_json = evaluate_model(model, data_test, label_test, data_class)
+
+    params = model.get_params()
+    output_json['kernel'] = params['kernel']
+    output_json['dataset_name'] = dataset_name
+    output_json['name'] = model_name
+    save_json(output_json, model_name)
+    pass
+
+
 def save_model(model: svm.SVC, model_name: str, output_path: str = DEFAULT_OUTPUT_PATH,
                file_name: str = DEFAULT_MODEL_NAME) -> None:
-    with open(f'{output_path}/{model_name}/{file_name}', 'wb') as file:
+    path = f'{output_path}\\{model_name}\\{file_name}'
+    make_dir(path)
+    with open(path, 'wb') as file:
         pickle.dump(model, file)
 
 
 def save_json(json_data: dict, model_name: str, output_path: str = DEFAULT_OUTPUT_PATH, file_name: str = DEFAULT_JSON_NAME) -> None:
-    with open(f'{output_path}/{model_name}/{file_name}', 'w') as file:
+    path = f'{output_path}\\{model_name}\\{file_name}'
+    make_dir(path)
+    with open(path, 'w') as file:
         json.dump(json_data, file)
 
 
-def plot_heatmap(cm: ndarray, class_names: ndarray, output_path: str = DEFAULT_CONFUSION_MATRIX_NAME) -> None:
+def plot_heatmap(cm: ndarray, class_names: ndarray, model_name: str, output_path: str = DEFAULT_OUTPUT_PATH, file_name: str = DEFAULT_CONFUSION_MATRIX_NAME) -> None:
     df_cm = pd.DataFrame(cm)
     plt.figure(figsize=(10, 7))
     sns.heatmap(
@@ -104,7 +130,10 @@ def plot_heatmap(cm: ndarray, class_names: ndarray, output_path: str = DEFAULT_C
     )
     plt.xlabel('Prediction')
     plt.ylabel('Actual')
-    plt.savefig(output_path)
+
+    path = f'{output_path}\\{model_name}\\{file_name}'
+    make_dir(path)
+    plt.savefig(path)
 
 
 def train_model(path: str, model_name: str, kernel: str) -> None:
@@ -113,14 +142,15 @@ def train_model(path: str, model_name: str, kernel: str) -> None:
 
     data_train, data_test, label_train, label_test = split_data(data, label)
 
-    model = svm.SVC(kernel=kernel)
+    model = svm.SVC(kernel=kernel, verbose=True)
 
     model.fit(data_train, label_train)
 
-    output_json = evaluate_model(model, data_test, label_test, data_class)
+    dataset_name = path.split('\\')[-1]
 
-    save_json(output_json, model_name)
+    save_model_specifications(model, dataset_name, model_name, data_test, label_test, data_class)
     save_model(model, model_name)
+
 
 
 if __name__ == '__main__':

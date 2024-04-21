@@ -34,7 +34,7 @@ def make_dir(path):
     path_list = path.split("\\")
     current_path = ""
 
-    if path_list[-1].contains("."):
+    if path_list[-1].find('.') != -1:
         path_list = path_list[:-1]
 
     for path in path_list:
