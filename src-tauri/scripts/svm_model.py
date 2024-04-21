@@ -16,6 +16,7 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 ZERO_PAD_CONSTANT = 10e-6
 DEFAULT_MODEL_NAME = 'model.pkl'
+DEFAULT_SCALER_NAME = 'scaler.pkl'
 DEFAULT_OUTPUT_PATH = 'models'
 DEFAULT_CONFUSION_MATRIX_NAME = 'confusion_matrix.png'
 DEFAULT_JSON_NAME = 'specification.json'
@@ -34,7 +35,7 @@ def make_dir(path):
             os.mkdir(current_path)
 
 
-def preprocess_data(raw_data: DataFrame) -> (ndarray, ndarray, ndarray):
+def preprocess_data(raw_data: DataFrame) -> (ndarray, ndarray, ndarray, MinMaxScaler):
     encoder = LabelEncoder()
     label = encoder.fit_transform(raw_data['Label'])
 
@@ -48,7 +49,7 @@ def preprocess_data(raw_data: DataFrame) -> (ndarray, ndarray, ndarray):
     data_class = raw_data['Label'].unique()
 
     # print(f'Data Class: {data_class}')
-    return np_data, label, data_class
+    return np_data, label, data_class, scaler
 
 
 def split_data(data: ndarray, label: ndarray) -> (ndarray, ndarray, ndarray, ndarray):
@@ -96,9 +97,12 @@ def save_model_specifications(model: svm.SVC, dataset_name: str, model_name: str
     output_json = evaluate_model(model, data_test, label_test, data_class)
 
     params = model.get_params()
+
     output_json['hyperparameters'] = {key: str(value) for key, value in params.items()}
     output_json['dataset_name'] = dataset_name
     output_json['name'] = model_name
+    output_json['data_class'] = data_class.tolist()
+
     save_json(output_json, model_name)
     pass
 
@@ -138,7 +142,7 @@ def plot_heatmap(cm: ndarray, class_names: ndarray, model_name: str, output_path
 
 def train_model(path: str, model_name: str, kernel: str, c: float, gamma: str | float, degree: int) -> None:
     data = pd.read_csv(path)
-    data, label, data_class = preprocess_data(data)
+    data, label, data_class, scaler = preprocess_data(data)
 
     data_train, data_test, label_train, label_test = split_data(data, label)
 
@@ -146,10 +150,11 @@ def train_model(path: str, model_name: str, kernel: str, c: float, gamma: str | 
 
     model.fit(data_train, label_train)
 
-    dataset_name = path.split('\\')[-1]
+    dataset_name = path.split('\\')[-2]
 
     save_model_specifications(model, dataset_name, model_name, data_test, label_test, data_class)
-    save_model(model, model_name)
+    save_model(model, model_name, file_name=DEFAULT_MODEL_NAME)
+    save_model(scaler, model_name, file_name=DEFAULT_SCALER_NAME)
 
 
 
