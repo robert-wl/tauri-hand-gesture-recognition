@@ -96,7 +96,7 @@ def save_model_specifications(model: svm.SVC, dataset_name: str, model_name: str
     output_json = evaluate_model(model, data_test, label_test, data_class)
 
     params = model.get_params()
-    output_json['kernel'] = params['kernel']
+    output_json['hyperparameters'] = {key: str(value) for key, value in params.items()}
     output_json['dataset_name'] = dataset_name
     output_json['name'] = model_name
     save_json(output_json, model_name)
@@ -136,13 +136,13 @@ def plot_heatmap(cm: ndarray, class_names: ndarray, model_name: str, output_path
     plt.savefig(path)
 
 
-def train_model(path: str, model_name: str, kernel: str) -> None:
+def train_model(path: str, model_name: str, kernel: str, c: float, gamma: str | float, degree: int) -> None:
     data = pd.read_csv(path)
     data, label, data_class = preprocess_data(data)
 
     data_train, data_test, label_train, label_test = split_data(data, label)
 
-    model = svm.SVC(kernel=kernel, verbose=True)
+    model = svm.SVC(kernel=kernel, verbose=True, C=c, gamma=gamma, degree=degree)
 
     model.fit(data_train, label_train)
 
@@ -157,5 +157,12 @@ if __name__ == '__main__':
     dataset_path = sys.argv[1]
     model_name = sys.argv[2]
     kernel = sys.argv[3]
+    c = sys.argv[4]
+    gamma = sys.argv[5]
+    degree = sys.argv[6]
 
-    train_model(dataset_path, model_name, kernel)
+    degree = int(degree) if kernel == 'poly' else 3
+    gamma = 'scale' if gamma == 'scale' else 'auto' if gamma == 'auto' else float(gamma)
+    c = float(c)
+
+    train_model(dataset_path, model_name, kernel, c, gamma, degree)
