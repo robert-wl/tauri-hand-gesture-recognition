@@ -2,10 +2,11 @@
   import type { Label, ProgressPayload } from "../../../../bindings";
   import DatasetService from "../../../services/dataset-service";
   import ProgressBar from "../ProgressBar.svelte";
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
   import RefreshIcon from "../icons/RefreshIcon.svelte";
   import ImageIcon from "../icons/ImageIcon.svelte";
+  import { scale, fade } from "svelte/transition";
 
   export let datasetName: string;
   export let datasetLabel: Label;
@@ -44,7 +45,9 @@
   $: realProgress = datasetLabel && datasetLabel.is_preprocessed ? 100 : progress;
 </script>
 
-<div class="card min-h-40 bg-base-100 shadow-xl rounded-t-none">
+<div
+  class="card min-h-40 bg-base-100 shadow-xl rounded-t-none"
+  in:scale|global={{ duration: 100, opacity: 0.5, start: 0.5 }}>
   <div class="card-title flex flex-col gap-0">
     <ProgressBar progress={realProgress} />
     {#await thumbnail}
@@ -53,6 +56,8 @@
       </div>
     {:then t}
       <img
+        in:fade={{ duration: 500 }}
+        out:fade={{ duration: 0 }}
         alt="Dataset Thumbnail"
         class="object-cover w-full h-48 rounded-sm transition-opacity rounded-t-none"
         src={`data:image/jpeg;base64,${t}`} />

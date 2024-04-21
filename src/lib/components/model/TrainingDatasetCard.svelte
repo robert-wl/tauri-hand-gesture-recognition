@@ -1,22 +1,23 @@
 <script lang="ts">
-  import type { GeneralDataset } from "../../../../bindings";
+  import type { TrainingDataset } from "../../../../bindings";
   import DatasetService from "../../../services/dataset-service";
   import { Link } from "svelte-routing";
   import RefreshIcon from "../icons/RefreshIcon.svelte";
+  import { scale } from "svelte/transition";
 
-  export let dataset: GeneralDataset;
+  export let dataset: TrainingDataset;
   let imageElement: Optional<HTMLImageElement> = undefined;
   let thumbnail: string = "";
 
   async function getThumbnail() {
     if (!thumbnail) {
-      thumbnail = await DatasetService.getRandomDatasetImage(dataset.name);
+      thumbnail = await DatasetService.getRandomProcessedDatasetImage(dataset.name);
       return;
     }
     imageElement!.style.opacity = "0";
 
     setTimeout(async () => {
-      thumbnail = await DatasetService.getRandomDatasetImage(dataset.name);
+      thumbnail = await DatasetService.getRandomProcessedDatasetImage(dataset.name);
       imageElement!.style.opacity = "1";
     }, 150);
   }
@@ -24,7 +25,9 @@
   getThumbnail();
 </script>
 
-<div class="card w-64 min-h-40 bg-base-100 shadow-xl border-primary border-t-2">
+<div
+  class="card w-64 min-h-40 bg-base-100 shadow-xl border-primary border-t-2"
+  in:scale|global={{ duration: 200, opacity: 0.5, start: 0.5 }}>
   <div class="card-body items-center">
     <div class="relative w-48 bg-gray-400 rounded-sm">
       {#if !thumbnail}
@@ -49,11 +52,11 @@
     </div>
     <hr class="my-2 w-full border-gray-200" />
     <h2 class="card-title text-xl text-center pb-2">{dataset.name}</h2>
-    <p class="text-center">{dataset.label_amount} Labels</p>
-    <p class="text-center">{dataset.data_amount} Images</p>
+    <p class="text-center">{dataset.feature_count} Features</p>
+    <p class="text-center">{dataset.data_amount} Data</p>
     <Link
       class="btn btn-primary btn-sm min-h-0 h-fit font-bold text-white py-2.5 mt-2 w-full"
-      to={`/preprocess/${dataset.name}`}>
+      to={`/training/${dataset.name}`}>
       Select Dataset
     </Link>
   </div>

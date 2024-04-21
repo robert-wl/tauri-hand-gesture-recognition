@@ -17,13 +17,13 @@
     </p>
   </div>
   <div class="w-full flex flex-wrap justify-center items-center gap-4 p-4">
-    <Link to="/dataset">
+    <Link to="/preprocess-dataset">
       <MenuCard
         imageUrl="/home/data-preprocess.png"
         text="Preprocess Hand Images with MediaPipe Framework"
         title="Data Preprocessing" />
     </Link>
-    <Link to="/training">
+    <Link to="/training-dataset">
       <MenuCard
         imageUrl="/home/model-training.png"
         text="Train a Support Vector Machine Model with to classify Hand Gestures"

@@ -1,22 +1,21 @@
 <script lang="ts">
   import { Route, Router } from "svelte-routing";
   import Home from "./routes/Home.svelte";
-  import Dataset from "./routes/preprocess/DatasetList.svelte";
+  import PreprocessDataset from "./routes/preprocess/PreprocessDataset.svelte";
   import Preprocess from "./routes/preprocess/Preprocess.svelte";
-  import { cubicIn } from "svelte/easing";
-  import { blur, draw, fade, fly, scale, slide } from "svelte/transition";
   import Training from "./routes/training/Training.svelte";
+  import TrainingDataset from "./routes/training/TrainingDataset.svelte";
 </script>
 
 <Router>
-  <!--      <Route component={BlogPost} path="/blog/:id" />-->
-  <!--      <Route component={Blog} path="/blog" />-->
-  <!--      <Route component={About} path="/about" />-->
   <Route path="/">
     <Home />
   </Route>
-  <Route path="/dataset">
-    <Dataset />
+  <Route path="/preprocess-dataset">
+    <PreprocessDataset />
+  </Route>
+  <Route path="/training-dataset">
+    <TrainingDataset />
   </Route>
   <Route
     let:params

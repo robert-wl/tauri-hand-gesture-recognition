@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Dataset, Label } from "../../../bindings";
   import DatasetService from "../../services/dataset-service";
-  import DataPreviewModal from "../../lib/components/dataset/DataPreviewModal.svelte";
-  import DatasetLabelCard from "../../lib/components/dataset/DatasetLabelCard.svelte";
+  import DataPreviewModal from "../../lib/components/preprocess/DataPreviewModal.svelte";
+  import DatasetLabelCard from "../../lib/components/preprocess/DatasetLabelCard.svelte";
   import Tab from "../../lib/components/Tab.svelte";
 
   export let name: string = "";
