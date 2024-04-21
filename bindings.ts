@@ -12,7 +12,9 @@ export type Metrics = { precision: number; recall: number; "f1-score": number; s
 
 export type Model = { name: string; model_specification: ModelSpecification; confusion_matrix_image: string }
 
-export type ModelSpecification = { dataset_name: string; kernel: string; accuracy: number; precision: number; recall: number; f1: number; confusion_matrix: number[][]; classification_report: ClassificationReport }
+export type ModelHyperparameter = { kernel: string; C: string; gamma: string; degree: string }
+
+export type ModelSpecification = { dataset_name: string; accuracy: number; precision: number; recall: number; f1: number; confusion_matrix: number[][]; hyperparameters: ModelHyperparameter; classification_report: ClassificationReport }
 
 export type ProgressPayload = { name: string; label: string; current_amount: number; total_amount: number }
 
@@ -20,7 +22,7 @@ export type TauRpcDatasetApiInputTypes = { proc_name: "get_all"; input_type: nul
 
 export type TauRpcDatasetApiOutputTypes = { proc_name: "get_all"; output_type: GeneralDataset[] } | { proc_name: "get_all_training_dataset"; output_type: TrainingDataset[] } | { proc_name: "get_all_testing_dataset"; output_type: TestingDataset[] } | { proc_name: "get_random_image"; output_type: string } | { proc_name: "get_random_processed_image"; output_type: string } | { proc_name: "get_labels"; output_type: Label[] } | { proc_name: "get_data"; output_type: string[] } | { proc_name: "get"; output_type: Dataset } | { proc_name: "preprocess"; output_type: null } | { proc_name: "get_image"; output_type: string } | { proc_name: "get_processed_image"; output_type: string | null }
 
-export type TauRpcModelApiInputTypes = { proc_name: "train"; input_type: [string, string, string] } | { proc_name: "get"; input_type: { __taurpc_type: string } } | { proc_name: "remove"; input_type: { __taurpc_type: string } }
+export type TauRpcModelApiInputTypes = { proc_name: "train"; input_type: [string, string, ModelHyperparameter] } | { proc_name: "get"; input_type: { __taurpc_type: string } } | { proc_name: "remove"; input_type: { __taurpc_type: string } }
 
 export type TauRpcModelApiOutputTypes = { proc_name: "train"; output_type: null } | { proc_name: "get"; output_type: Model } | { proc_name: "remove"; output_type: null }
 
@@ -32,7 +34,7 @@ export type TestingDataset = { name: string; dataset_name: string; accuracy: num
 
 export type TrainingDataset = { name: string; data_amount: number; feature_count: number }
 
-const ARGS_MAP = {"util":"{\"open_directory\":[],\"get_current_dir\":[]}","model":"{\"train\":[\"dataset_name\",\"model_name\",\"kernel\"],\"get\":[\"model_name\"],\"remove\":[\"model_name\"]}","dataset":"{\"get_processed_image\":[\"name\",\"label\",\"data\"],\"get_all_testing_dataset\":[],\"get_all\":[],\"get_labels\":[\"dataset_name\"],\"preprocess\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"],\"get_random_image\":[\"path\"],\"get_random_processed_image\":[\"path\"],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_all_training_dataset\":[],\"get\":[\"dataset_name\"]}"}
+const ARGS_MAP = {"util":"{\"open_directory\":[],\"get_current_dir\":[]}","dataset":"{\"get_labels\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"],\"get_random_image\":[\"path\"],\"get_all_testing_dataset\":[],\"get\":[\"dataset_name\"],\"get_processed_image\":[\"name\",\"label\",\"data\"],\"get_random_processed_image\":[\"path\"],\"get_all_training_dataset\":[],\"preprocess\":[\"dataset_name\"],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_all\":[]}","model":"{\"remove\":[\"model_name\"],\"get\":[\"model_name\"],\"train\":[\"dataset_name\",\"model_name\",\"hyperparameter\"]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)

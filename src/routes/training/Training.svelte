@@ -3,10 +3,9 @@
   import ModelService from "../../services/model-service";
   import ClassificationReport from "../../lib/components/model/ClassificationReport.svelte";
   import SpecificationReport from "../../lib/components/model/SpecificationReport.svelte";
-  import type { Model } from "../../../bindings";
+  import type { Model, ModelHyperparameter } from "../../../bindings";
   import ConfusionMatrixReport from "../../lib/components/model/ConfusionMatrixReport.svelte";
   import ModelConfiguration from "../../lib/components/model/ModelConfiguration.svelte";
-  import type ModelHyperparameter from "../../models/model-hyperparameter";
 
   export let name: string = "";
 
@@ -16,11 +15,12 @@
   };
 
   const trainModel = async (modelName: string, hyperparameter: ModelHyperparameter) => {
-    await ModelService.trainModel(name, modelName, hyperparameter.kernel);
+    await ModelService.trainModel(name, modelName, hyperparameter);
     model = await ModelService.getModel(modelName);
   };
 
   const retrainModel = async () => {
+    console.log("Retraining model", model);
     await ModelService.removeModel(model.name);
     model = null;
   };

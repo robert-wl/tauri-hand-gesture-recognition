@@ -26,8 +26,22 @@
       <tbody>
         <tr>
           <td>Kernel</td>
-          <td>{model.model_specification.kernel}</td>
+          <td>{model.model_specification.hyperparameters.kernel}</td>
         </tr>
+        <tr>
+          <td>C</td>
+          <td>{model.model_specification.hyperparameters.C}</td>
+        </tr>
+        <tr>
+          <td>Gamma</td>
+          <td>{model.model_specification.hyperparameters.gamma}</td>
+        </tr>
+        {#if model.model_specification.hyperparameters.kernel === "poly"}
+          <tr>
+            <td>Degree</td>
+            <td>{model.model_specification.hyperparameters.degree}</td>
+          </tr>
+        {/if}
         <tr>
           <td>Accuracy</td>
           <td>{model.model_specification.accuracy.toFixed(2)}</td>

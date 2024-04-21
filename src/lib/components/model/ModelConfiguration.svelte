@@ -1,16 +1,15 @@
 <script lang="ts">
   import { scale, fade } from "svelte/transition";
   import ModelService from "../../../services/model-service";
-  import type { Model } from "../../../../bindings";
-  import type ModelHyperparameter from "../../../models/model-hyperparameter";
+  import type { Model, ModelHyperparameter } from "../../../../bindings";
 
   export let name: string;
   export let trainModel: (modelName: string, hyperparameter: ModelHyperparameter) => void;
 
   let hyperparameters: ModelHyperparameter = {
-    c: 1.0,
+    C: "1.0",
     gamma: "scale",
-    degree: 3,
+    degree: "3",
     kernel: "rbf",
   };
 
@@ -19,7 +18,7 @@
   let modelName: Nullable<string>;
 
   const validateHyperparameters = (params) => {
-    if (isNaN(Number(params.c)) || Number(params.c) <= 0) {
+    if (isNaN(Number(params.C)) || Number(params.C) <= 0) {
       return false;
     }
 
@@ -102,7 +101,7 @@
               <span class="label-text">C</span>
             </div>
             <input
-              bind:value={hyperparameters.c}
+              bind:value={hyperparameters.C}
               class="input bg-gray-50 hover:border-gray-300 border-gray-300 focus:outline-none focus:scale-100"
               placeholder="Positive float"
               type="text" />
