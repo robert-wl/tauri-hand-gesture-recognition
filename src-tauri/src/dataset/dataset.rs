@@ -1,7 +1,15 @@
 #[taurpc::ipc_type]
-pub struct ModelDataset {
+pub struct TestingDataset {
+    pub name: String,
+    pub dataset_name: String,
+    pub accuracy: f32,
+}
+
+#[taurpc::ipc_type]
+pub struct TrainingDataset {
     pub name: String,
     pub data_amount: u16,
+    pub feature_count: u16,
 }
 
 #[taurpc::ipc_type]

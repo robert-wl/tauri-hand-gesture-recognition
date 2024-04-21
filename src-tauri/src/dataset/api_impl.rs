@@ -1,21 +1,23 @@
 use std::fs;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 
-use base64::engine::general_purpose;
 use base64::Engine;
-use rand::random;
+use base64::engine::general_purpose;
 use tauri::Manager;
 
 use crate::constants::{
-    CONVERTER_SCRIPT, DATASET_DIRECTORY, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV,
-    SCRIPTS_DIRECTORY,
+    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_SPECIFICATION_JSON, MODELS_DIRECTORY,
+    PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY,
 };
 use crate::dataset::api::DatasetApi;
-use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ModelDataset, ProgressPayload};
+use crate::dataset::dataset::{
+    Dataset, GeneralDataset, Label, ProgressPayload, TestingDataset, TrainingDataset,
+};
+use crate::model::model::ModelSpecification;
 use crate::py_utils::run_script;
-use crate::utils::{get_directory_content, remove_directory_content, FileType};
+use crate::utils::{FileType, get_directory_content, get_random_file, remove_directory_content};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
@@ -57,12 +59,12 @@ impl DatasetApi for DatasetApiImpl {
         Ok(datasets)
     }
 
-    async fn get_all_model_dataset(self) -> Result<Vec<ModelDataset>, String> {
+    async fn get_all_training_dataset(self) -> Result<Vec<TrainingDataset>, String> {
         let processed_dir = Path::new(PROCESSED_DIRECTORY);
 
         let dataset_dirs = get_directory_content(processed_dir, &FileType::Directory);
 
-        let model_datasets: Vec<ModelDataset> = dataset_dirs
+        let model_datasets: Vec<TrainingDataset> = dataset_dirs
             .iter()
             .filter_map(|dataset| {
                 let csv = dataset.join(PROCESSED_OUTPUT_CSV);
@@ -79,8 +81,13 @@ impl DatasetApi for DatasetApiImpl {
                     let mut rdt = csv::Reader::from_reader(file.unwrap());
 
                     let data_amount = rdt.records().count() as u16;
+                    let feature_count = (rdt.headers().unwrap().len() - 2) as u16;
 
-                    let model_dataset = ModelDataset { name, data_amount };
+                    let model_dataset = TrainingDataset {
+                        name,
+                        data_amount,
+                        feature_count
+                    };
 
                     return Some(model_dataset);
                 }
@@ -89,6 +96,45 @@ impl DatasetApi for DatasetApiImpl {
             .collect();
 
         Ok(model_datasets)
+    }
+
+    async fn get_all_testing_dataset(self) -> Result<Vec<TestingDataset>, String> {
+        let model_dir = Path::new(MODELS_DIRECTORY);
+
+        let model_dirs = get_directory_content(model_dir, &FileType::Directory);
+
+        let testing_datasets: Vec<TestingDataset> = model_dirs
+            .iter()
+            .filter_map(|dir| {
+                let json = dir.join(MODEL_SPECIFICATION_JSON);
+
+                let mut file = File::open(json).expect("Failed to open specification.json");
+                let mut data = String::new();
+
+                file.read_to_string(&mut data)
+                    .expect("Failed to read evaluation.json");
+
+                let model: ModelSpecification =
+                    serde_json::from_str(&data).expect("Failed to parse specification.json");
+
+                let name = dir
+                    .file_name()
+                    .unwrap()
+                    .to_os_string()
+                    .into_string()
+                    .unwrap();
+
+                let testing_dataset = TestingDataset {
+                    name,
+                    dataset_name: model.dataset_name,
+                    accuracy: model.accuracy,
+                };
+
+                Some(testing_dataset)
+            })
+            .collect();
+
+        Ok(testing_datasets)
     }
 
     async fn get(self, name: String) -> Result<Dataset, String> {
@@ -103,7 +149,7 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_labels(self, name: String) -> Result<Vec<Label>, String> {
-        let dataset_dir = Path::new(DATASET_DIRECTORY).join(name.clone());
+        let dataset_dir = Path::new(DATASET_DIRECTORY).join(&name);
 
         let dir_list = get_directory_content(&dataset_dir, &FileType::Directory);
 
@@ -131,7 +177,7 @@ impl DatasetApi for DatasetApiImpl {
                 .is_some();
 
             let dataset_label = Label {
-                name: dataset_label,
+                name: dataset_label.clone(),
                 data,
                 is_preprocessed,
             };
@@ -143,23 +189,18 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_data(self, name: String, label: String) -> Result<Vec<String>, String> {
-        let label_dir = Path::new(DATASET_DIRECTORY)
-            .join(name.clone())
-            .join(label.clone());
+        let label_dir = Path::new(DATASET_DIRECTORY).join(name).join(label);
 
         let file_dirs = get_directory_content(&label_dir, &FileType::File);
 
         let data = file_dirs
             .iter()
             .map(|file| {
-                let file_name = file
-                    .file_name()
+                file.file_name()
                     .unwrap()
                     .to_os_string()
                     .into_string()
-                    .unwrap();
-
-                file_name
+                    .unwrap()
             })
             .collect();
 
@@ -169,26 +210,28 @@ impl DatasetApi for DatasetApiImpl {
     async fn get_random_image(self, path: String) -> Result<String, String> {
         let dataset_dir = Path::new(DATASET_DIRECTORY).join(path);
 
-        let mut current_dir = dataset_dir.clone();
-        loop {
-            let label_dirs = get_directory_content(&current_dir, &FileType::Directory);
+        let random_file = get_random_file(&dataset_dir);
 
-            if label_dirs.is_empty() {
-                break;
-            }
-
-            let random_number = random::<usize>() % label_dirs.len();
-            let random_dir = label_dirs.get(random_number).unwrap();
-
-            current_dir = random_dir.clone();
+        if random_file.is_none() {
+            return Err("Failed to get random image".to_string());
         }
 
-        let file_dirs = get_directory_content(&current_dir, &FileType::File);
+        let thumbnail = fs::read(random_file.unwrap()).unwrap_or_default();
 
-        let random_number = random::<usize>() % file_dirs.len();
-        let random_file = file_dirs.get(random_number).unwrap();
+        let base64_thumbnail = general_purpose::STANDARD.encode(thumbnail);
+        Ok(base64_thumbnail)
+    }
 
-        let thumbnail = fs::read(random_file).unwrap_or_default();
+    async fn get_random_processed_image(self, path: String) -> Result<String, String> {
+        let processed_dir = Path::new(PROCESSED_DIRECTORY).join(path);
+
+        let random_file = get_random_file(&processed_dir);
+
+        if random_file.is_none() {
+            return Err("Failed to get random processed image".to_string());
+        }
+
+        let thumbnail = fs::read(random_file.unwrap()).unwrap_or_default();
 
         let base64_thumbnail = general_purpose::STANDARD.encode(thumbnail);
         Ok(base64_thumbnail)
@@ -230,8 +273,8 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn preprocess(self, name: String, app_handle: tauri::AppHandle) -> Result<(), String> {
-        let in_path = Path::new(DATASET_DIRECTORY).join(name.clone());
-        let out_path = Path::new(PROCESSED_DIRECTORY).join(name.clone());
+        let in_path = Path::new(DATASET_DIRECTORY).join(&name);
+        let out_path = Path::new(PROCESSED_DIRECTORY).join(&name);
 
         remove_directory_content(&out_path);
 
@@ -241,7 +284,7 @@ impl DatasetApi for DatasetApiImpl {
             let data_count = get_directory_content(&dir, &FileType::File).len() as u16;
             let label = dir.file_name().unwrap().to_str().unwrap().to_string();
             let in_dir_str = dir.to_str().unwrap().to_string();
-            let out_dir_str = out_path.join(label.clone()).to_str().unwrap().to_string();
+            let out_dir_str = out_path.join(&label).to_str().unwrap().to_string();
             let out_csv_str = out_path
                 .join(PROCESSED_OUTPUT_CSV)
                 .to_str()
@@ -274,8 +317,6 @@ impl DatasetApi for DatasetApiImpl {
             for line in reader.lines() {
                 println!("{}", line.unwrap());
             }
-
-            println!("Waiting for child to finish");
 
             let status = child.wait().expect("failed to wait on child");
 
