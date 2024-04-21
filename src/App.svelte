@@ -19,6 +19,11 @@
   </Route>
   <Route
     let:params
+    path="/training/:name">
+    <Training name={params.name} />
+  </Route>
+  <Route
+    let:params
     path="/preprocess/:name">
     <Preprocess name={params.name} />
   </Route>
