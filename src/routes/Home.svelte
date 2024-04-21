@@ -1,12 +1,6 @@
 <script lang="ts">
   import MenuCard from "../lib/components/home/MenuCard.svelte";
-  import { createTauRPCProxy } from "../../bindings.js";
   import { Link } from "svelte-routing";
-
-  async function test() {
-    const tsc = await createTauRPCProxy();
-    const res = await tsc.dataset.preprocess("Dataset BISINDO", "A");
-  }
 </script>
 
 <div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
