@@ -3,12 +3,12 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 
-use base64::Engine;
 use base64::engine::general_purpose;
+use base64::Engine;
 use tauri::Manager;
 
 use crate::constants::{
-    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_SPECIFICATION_JSON, MODELS_DIRECTORY,
+    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODELS_DIRECTORY, MODEL_SPECIFICATION_JSON,
     PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY,
 };
 use crate::dataset::api::DatasetApi;
@@ -17,7 +17,7 @@ use crate::dataset::dataset::{
 };
 use crate::model::model::ModelSpecification;
 use crate::py_utils::run_script;
-use crate::utils::{FileType, get_directory_content, get_random_file, remove_directory_content};
+use crate::utils::{get_directory_content, get_random_file, remove_directory_content, FileType};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
@@ -86,7 +86,7 @@ impl DatasetApi for DatasetApiImpl {
                     let model_dataset = TrainingDataset {
                         name,
                         data_amount,
-                        feature_count
+                        feature_count,
                     };
 
                     return Some(model_dataset);

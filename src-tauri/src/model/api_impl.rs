@@ -11,7 +11,7 @@ use crate::constants::{
     PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY,
 };
 use crate::model::api::ModelApi;
-use crate::model::model::{Model, ModelSpecification};
+use crate::model::model::{Model, ModelHyperparameter, ModelSpecification};
 use crate::py_utils::run_script;
 
 #[derive(Clone)]
@@ -23,7 +23,7 @@ impl ModelApi for ModelApiImpl {
         self,
         dataset_name: String,
         model_name: String,
-        kernel: String,
+        hyperparameter: ModelHyperparameter,
     ) -> Result<(), String> {
         let csv = Path::new(PROCESSED_DIRECTORY)
             .join(dataset_name)
@@ -40,7 +40,17 @@ impl ModelApi for ModelApiImpl {
 
         let script_path = Path::new(SCRIPTS_DIRECTORY).join(MODEL_SCRIPT);
 
-        let mut child = run_script(&script_path, vec![dataset_path, model_name, kernel]);
+        let mut child = run_script(
+            &script_path,
+            vec![
+                dataset_path,
+                model_name,
+                hyperparameter.kernel,
+                hyperparameter.c,
+                hyperparameter.gamma,
+                hyperparameter.degree,
+            ],
+        );
 
         let stderr = child.stderr.take().unwrap();
         let reader = BufReader::new(stderr);
