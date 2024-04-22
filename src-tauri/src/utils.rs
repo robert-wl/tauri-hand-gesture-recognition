@@ -7,6 +7,12 @@ use base64::engine::general_purpose;
 use rand::random;
 use walkdir::WalkDir;
 
+pub async fn check_or_create(path: &str) {
+    if !Path::new(path).exists() {
+        fs::create_dir_all(path).expect("failed to create directory");
+    }
+}
+
 pub enum FileType {
     Directory,
     File,

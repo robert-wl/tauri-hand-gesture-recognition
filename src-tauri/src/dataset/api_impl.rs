@@ -5,7 +5,7 @@ use std::path::Path;
 use tauri::Manager;
 
 use crate::constants::{
-    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_SPECIFICATION_JSON, MODELS_DIRECTORY,
+    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON,
     PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY,
 };
 use crate::dataset::api::DatasetApi;
@@ -98,7 +98,7 @@ impl DatasetApi for DatasetApiImpl {
     }
 
     async fn get_all_testing_dataset(self) -> Result<Vec<TestingDataset>, String> {
-        let model_dir = Path::new(MODELS_DIRECTORY);
+        let model_dir = Path::new(MODEL_DIRECTORY);
 
         let model_dirs = get_directory_content(model_dir, &FileType::Directory);
 

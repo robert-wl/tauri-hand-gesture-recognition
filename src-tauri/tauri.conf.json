@@ -45,7 +45,9 @@
         "signingIdentity": null
       },
       "resources": [
-        "./scripts/*"
+        "./scripts/*",
+
+        "./setup-venv.bat"
       ],
       "shortDescription": "",
       "targets": "all",
@@ -69,8 +71,9 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "frontend",
-        "width": 800
+        "title": "Hand Sign Recognizer",
+        "width": 800,
+        "maximized": true
       }
     ]
   }

@@ -41,8 +41,4 @@ export default class DatasetService extends BaseService {
   public static async preprocessDataset(dataName: string) {
     return await this.getTauRPCProxy().then((ipc) => ipc.dataset.preprocess(dataName));
   }
-
-  public static async openDatasetDirectory() {
-    return await this.getTauRPCProxy().then((ipc) => ipc.util.open_directory());
-  }
 }

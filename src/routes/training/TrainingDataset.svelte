@@ -5,6 +5,7 @@
   import Template from "../../lib/components/Template.svelte";
   import NProgress from "nprogress";
   import Loading from "../../lib/components/Loading.svelte";
+  import EmptyTrainDatasetCard from "../../lib/components/model/EmptyTrainDatasetCard.svelte";
 
   const fetchData = async () => {
     NProgress.start();
@@ -22,7 +23,7 @@
       <Loading />
     {:then datasets}
       {#if datasets.length === 0}
-        <EmptyDatasetCard />
+        <EmptyTrainDatasetCard />
       {:else}
         {#each datasets as dataset}
           <TrainingDatasetCard {dataset} />

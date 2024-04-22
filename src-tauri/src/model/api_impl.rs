@@ -5,7 +5,7 @@ use std::path::Path;
 use base64::Engine;
 use base64::engine::general_purpose;
 
-use crate::constants::{CONFUSION_MATRIX_IMAGE, MODEL_SPECIFICATION_JSON, MODELS_DIRECTORY, PREDICT_SCRIPT, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, TEMP_DIRECTORY, TESTING_INPUT_IMAGE, TESTING_OUTPUT_IMAGE, TRAIN_SCRIPT};
+use crate::constants::{CONFUSION_MATRIX_IMAGE, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PREDICT_SCRIPT, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, TEMP_DIRECTORY, TESTING_INPUT_IMAGE, TESTING_OUTPUT_IMAGE, TRAIN_SCRIPT};
 use crate::model::api::ModelApi;
 use crate::model::model::{Model, ModelHyperparameter, ModelPrediction, ModelSpecification};
 use crate::py_utils::run_script;
@@ -73,20 +73,20 @@ impl ModelApi for ModelApiImpl {
     }
 
     async fn get_all(self) -> Result<Vec<Model>, String> {
-        let models_dir = Path::new(MODELS_DIRECTORY);
+        let models_dir = Path::new(MODEL_DIRECTORY);
 
         let models = get_directory_content(models_dir, &FileType::Directory);
 
         let model_list = models
             .iter()
             .map(|model_dir| {
-                let evaluation_json = model_dir.join(MODEL_SPECIFICATION_JSON);
+                let specification_json = model_dir.join(MODEL_SPECIFICATION_JSON);
 
-                let mut file = File::open(evaluation_json).expect("Failed to open evaluation.json");
+                let mut file = File::open(specification_json).expect("Failed to open specification.json");
                 let mut data = String::new();
 
                 file.read_to_string(&mut data)
-                    .expect("Failed to read evaluation.json");
+                    .expect("Failed to read specification.json");
 
                 let model_name = model_dir
                     .file_name()
@@ -96,7 +96,7 @@ impl ModelApi for ModelApiImpl {
                     .to_string();
 
                 let model: ModelSpecification =
-                    serde_json::from_str(&data).expect("Failed to parse evaluation.json");
+                    serde_json::from_str(&data).expect("Failed to parse specification.json");
 
                 let confusion_matrix_image = model_dir.join(CONFUSION_MATRIX_IMAGE);
                 
@@ -116,18 +116,18 @@ impl ModelApi for ModelApiImpl {
     }
 
     async fn get(self, model_name: String) -> Result<Model, String> {
-        let model_dir = Path::new(MODELS_DIRECTORY).join(&model_name);
+        let model_dir = Path::new(MODEL_DIRECTORY).join(&model_name);
 
-        let evaluation_json = model_dir.join(MODEL_SPECIFICATION_JSON);
+        let specification_json = model_dir.join(MODEL_SPECIFICATION_JSON);
 
-        let mut file = File::open(evaluation_json).expect("Failed to open evaluation.json");
+        let mut file = File::open(specification_json).expect("Failed to open specification.json");
         let mut data = String::new();
 
         file.read_to_string(&mut data)
-            .expect("Failed to read evaluation.json");
+            .expect("Failed to read specification.json");
 
         let model: ModelSpecification =
-            serde_json::from_str(&data).expect("Failed to parse evaluation.json");
+            serde_json::from_str(&data).expect("Failed to parse specification.json");
 
         let confusion_matrix_image = model_dir.join(CONFUSION_MATRIX_IMAGE);
 
@@ -144,7 +144,7 @@ impl ModelApi for ModelApiImpl {
     }
 
     async fn remove(self, model_name: String) -> Result<(), String> {
-        let model_dir = Path::new(MODELS_DIRECTORY).join(&model_name);
+        let model_dir = Path::new(MODEL_DIRECTORY).join(&model_name);
 
         remove_directory_content(&model_dir);
 
@@ -152,7 +152,7 @@ impl ModelApi for ModelApiImpl {
     }
 
     async fn predict(self, model_name: String, image: String) -> Result<ModelPrediction, String> {
-        let model_dir = Path::new(MODELS_DIRECTORY)
+        let model_dir = Path::new(MODEL_DIRECTORY)
             .join(&model_name)
             .to_str()
             .unwrap()

@@ -7,8 +7,6 @@
   import TrainingDataset from "./routes/training/TrainingDataset.svelte";
   import TestingDataset from "./routes/testing/TestingModel.svelte";
   import Testing from "./routes/testing/Testing.svelte";
-  import "nprogress/nprogress.css";
-  import NProgress from "nprogress";
   import Template from "./lib/components/Template.svelte";
 </script>
 

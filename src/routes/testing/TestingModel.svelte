@@ -5,6 +5,7 @@
   import Template from "../../lib/components/Template.svelte";
   import NProgress from "nprogress";
   import Loading from "../../lib/components/Loading.svelte";
+  import EmptyModelCard from "../../lib/components/testing/EmptyModelCard.svelte";
 
   const fetchData = async () => {
     NProgress.start();
@@ -22,7 +23,7 @@
       <Loading />
     {:then models}
       {#if models.length === 0}
-        <EmptyDatasetCard />
+        <EmptyModelCard />
       {:else}
         {#each models as model}
           <ModelCard {model} />

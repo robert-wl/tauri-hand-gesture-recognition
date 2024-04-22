@@ -23,7 +23,7 @@ from typing import Self
 ZERO_PAD_CONSTANT = 10e-6
 DEFAULT_MODEL_NAME = "model.pkl"
 DEFAULT_SCALER_NAME = "scaler.pkl"
-DEFAULT_OUTPUT_PATH = "models"
+DEFAULT_OUTPUT_PATH = "model"
 DEFAULT_CONFUSION_MATRIX_NAME = "confusion_matrix.png"
 DEFAULT_JSON_NAME = "specification.json"
 

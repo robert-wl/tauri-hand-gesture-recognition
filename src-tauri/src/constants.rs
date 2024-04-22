@@ -1,7 +1,7 @@
 pub const DATASET_DIRECTORY: &str = "dataset";
 pub const PROCESSED_DIRECTORY: &str = "processed";
 pub const SCRIPTS_DIRECTORY: &str = "scripts";
-pub const MODELS_DIRECTORY: &str = "models";
+pub const MODEL_DIRECTORY: &str = "model";
 pub const TEMP_DIRECTORY: &str = "temp";
 pub const VENV_DIRECTORY: &str = ".venv";
 

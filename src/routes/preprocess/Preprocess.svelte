@@ -22,7 +22,6 @@
   };
 
   const preprocessDataset = async () => {
-    NProgress.start();
     isLoading = true;
 
     dataset.labels = dataset.labels.map((label) => ({
@@ -33,7 +32,6 @@
     await DatasetService.preprocessDataset(name);
 
     isLoading = false;
-    NProgress.done();
   };
 
   $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
@@ -61,7 +59,6 @@
           <div class="flex flex-col items-start flex-1">
             <div class="text-center">Total Types: {dataset.labels.length}</div>
             <div class="text-center">Total Images: {dataLength}</div>
-            <div class="text-center">Processed Images: 0/{dataLength}</div>
           </div>
           {#if isLoading}
             <button

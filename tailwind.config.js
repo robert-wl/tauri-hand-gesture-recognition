@@ -7,7 +7,6 @@ export default {
   plugins: [require("daisyui")],
   daisyui: {
     themes: [
-      "corporate",
       {
         wlsn: {
           primary: "#1B467Eff",

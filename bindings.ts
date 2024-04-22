@@ -28,16 +28,21 @@ export type TauRpcModelApiInputTypes = { proc_name: "train"; input_type: [string
 
 export type TauRpcModelApiOutputTypes = { proc_name: "train"; output_type: null } | { proc_name: "get_all"; output_type: Model[] } | { proc_name: "get"; output_type: Model } | { proc_name: "remove"; output_type: null } | { proc_name: "predict"; output_type: ModelPrediction }
 
+export type TauRpcUtilApiInputTypes = { proc_name: "get_current_dir"; input_type: null } | { proc_name: "open_directory"; input_type: null }
+
+export type TauRpcUtilApiOutputTypes = { proc_name: "get_current_dir"; output_type: string } | { proc_name: "open_directory"; output_type: null }
+
 export type TestingDataset = { name: string; dataset_name: string; accuracy: number }
 
 export type TrainingDataset = { name: string; data_amount: number; feature_count: number }
 
-const ARGS_MAP = {"dataset":"{\"get_all_testing_dataset\":[],\"get_labels\":[\"dataset_name\"],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_all\":[],\"get_random_processed_image\":[\"path\"],\"get\":[\"dataset_name\"],\"preprocess\":[\"dataset_name\"],\"get_processed_image\":[\"name\",\"label\",\"data\"],\"get_all_training_dataset\":[],\"get_random_image\":[\"path\"],\"get_image\":[\"name\",\"label\",\"data\"]}","model":"{\"get_all\":[],\"get\":[\"model_name\"],\"predict\":[\"model_name\",\"image\"],\"train\":[\"dataset_name\",\"model_name\",\"hyperparameter\"],\"remove\":[\"model_name\"]}"}
+const ARGS_MAP = {"dataset":"{\"get_random_image\":[\"path\"],\"get_random_processed_image\":[\"path\"],\"get_labels\":[\"dataset_name\"],\"get_all_training_dataset\":[],\"get_all_testing_dataset\":[],\"get\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"],\"get_data\":[\"dataset_name\",\"label_name\"],\"preprocess\":[\"dataset_name\"],\"get_processed_image\":[\"name\",\"label\",\"data\"],\"get_all\":[]}","util":"{\"open_directory\":[],\"get_current_dir\":[]}","model":"{\"get\":[\"model_name\"],\"train\":[\"dataset_name\",\"model_name\",\"hyperparameter\"],\"predict\":[\"model_name\",\"image\"],\"remove\":[\"model_name\"],\"get_all\":[]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)
 
 type Router = {
 	'dataset': [TauRpcDatasetApiInputTypes, TauRpcDatasetApiOutputTypes],
+	'util': [TauRpcUtilApiInputTypes, TauRpcUtilApiOutputTypes],
 	'model': [TauRpcModelApiInputTypes, TauRpcModelApiOutputTypes],
 }

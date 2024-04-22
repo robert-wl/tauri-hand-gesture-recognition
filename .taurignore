@@ -1,4 +1,5 @@
 /src-tauri/dataset/
 /src-tauri/processed/
-/src-tauri/models/
+/src-tauri/model/
 /src-tauri/temp/
+/src-tauri/!TEMP/
