@@ -23,9 +23,9 @@
         </tr>
       </thead>
       <tbody>
-        {#each Object.entries(model.model_specification.classification_report) as [key, value]}
-          {#if key === "class"}
-            {#each Object.entries(value).sort(([a, _], [b, __]) => a.localeCompare(b)) as [key, value]}
+        {#each Object.entries(model.model_specification.classification_report) as [reportKey, reportVal]}
+          {#if reportKey === "class"}
+            {#each Object.entries(reportVal).sort(([a, _], [b, __]) => a.localeCompare(b)) as [key, value]}
               <tr>
                 <td>{key}</td>
                 <td>{value.precision.toFixed(2)}</td>
@@ -34,20 +34,20 @@
                 <td>{value.support}</td>
               </tr>
             {/each}
-          {:else if key === "accuracy"}
+          {:else if reportKey === "accuracy"}
             <tr>
-              <td>{key}</td>
+              <td>{reportKey}</td>
               <td></td>
               <td></td>
-              <td>{value.toFixed(2)}</td>
+              <td>{(+reportVal).toFixed(2)}</td>
             </tr>
-          {:else}
+          {:else if typeof reportVal !== "number"}
             <tr>
-              <td>{key}</td>
-              <td>{value.precision.toFixed(2)}</td>
-              <td>{value.recall.toFixed(2)}</td>
-              <td>{value["f1-score"].toFixed(2)}</td>
-              <td>{value.support}</td>
+              <td>{reportKey}</td>
+              <td>{(+reportVal.precision).toFixed(2)}</td>
+              <td>{(+reportVal.recall).toFixed(2)}</td>
+              <td>{(+reportVal["f1-score"]).toFixed(2)}</td>
+              <td>{reportVal.support}</td>
             </tr>
           {/if}
         {/each}

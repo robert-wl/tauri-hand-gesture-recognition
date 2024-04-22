@@ -15,6 +15,6 @@
     <img
       alt="Dataset Thumbnail"
       class="object-cover max-w-[40rem] rounded-sm transition-opacity"
-      src={`data:image/jpeg;base64,${model.confusion_matrix_image}`} />
+      src={`data:image/png;base64,${model.confusion_matrix_image}`} />
   </div>
 </div>

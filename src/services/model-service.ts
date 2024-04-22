@@ -6,6 +6,14 @@ export default class ModelService extends BaseService {
     return await this.getTauRPCProxy().then((ipc) => ipc.model.train(dataName, modelName, hyperparameter));
   }
 
+  public static async predict(modelName: string, base64: string) {
+    return await this.getTauRPCProxy().then((ipc) => ipc.model.predict(modelName, base64));
+  }
+
+  public static async getAllModel(): Promise<Model[]> {
+    return await this.getTauRPCProxy().then((ipc) => ipc.model.get_all());
+  }
+
   public static async getModel(modelName: string): Promise<Model> {
     return await this.getTauRPCProxy().then((ipc) => ipc.model.get(modelName));
   }

@@ -1,31 +1,31 @@
 <script lang="ts">
-  import DatasetService from "../../services/dataset-service";
   import EmptyDatasetCard from "../../lib/components/preprocess/EmptyDatasetCard.svelte";
-  import TrainingDatasetCard from "../../lib/components/model/TrainingDatasetCard.svelte";
+  import ModelService from "../../services/model-service";
+  import ModelCard from "../../lib/components/testing/ModelCard.svelte";
   import Template from "../../lib/components/Template.svelte";
   import NProgress from "nprogress";
   import Loading from "../../lib/components/Loading.svelte";
 
   const fetchData = async () => {
     NProgress.start();
-    const dataset = await DatasetService.getTrainingDatasets();
+    const models = await ModelService.getAllModel();
     NProgress.done();
-    return dataset;
+    return models;
   };
 </script>
 
 <Template
-  description="Choose your dataset from the list of available datasets to train your model."
-  title="Datasets">
+  description="Choose your model from the list below to start testing."
+  title="Models">
   <div class="w-full flex flex-wrap justify-center items-center gap-4 p-4">
     {#await fetchData()}
       <Loading />
-    {:then datasets}
-      {#if datasets.length === 0}
+    {:then models}
+      {#if models.length === 0}
         <EmptyDatasetCard />
       {:else}
-        {#each datasets as dataset}
-          <TrainingDatasetCard {dataset} />
+        {#each models as model}
+          <ModelCard {model} />
         {/each}
       {/if}
     {/await}

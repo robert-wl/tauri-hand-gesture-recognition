@@ -2,13 +2,13 @@
   import type { Dataset } from "../../../bindings";
   import DatasetService from "../../services/dataset-service";
   import DatasetLabelCard from "../../lib/components/preprocess/DatasetLabelCard.svelte";
-  import Tab from "../../lib/components/Tab.svelte";
+  import Template from "../../lib/components/Template.svelte";
+  import NProgress from "nprogress";
+  import { onMount } from "svelte";
+  import Loading from "../../lib/components/Loading.svelte";
 
   export let name: string = "";
 
-  const tabContent = ["Raw", "Preprocessed"];
-
-  let activeTab = 0;
   let isLoading = false;
   let dataset: Dataset = {
     name: "",
@@ -16,10 +16,13 @@
   };
 
   const getDataset = async () => {
+    NProgress.start();
     dataset = await DatasetService.getDataset(name);
+    NProgress.done();
   };
 
   const preprocessDataset = async () => {
+    NProgress.start();
     isLoading = true;
 
     dataset.labels = dataset.labels.map((label) => ({
@@ -30,29 +33,22 @@
     await DatasetService.preprocessDataset(name);
 
     isLoading = false;
-  };
-
-  const setActiveTab = (index: number) => {
-    activeTab = index;
+    NProgress.done();
   };
 
   $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
 
-  getDataset();
+  onMount(() => {
+    getDataset();
+  });
 </script>
 
-<div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
-  <div class="flex flex-col py-5 gap-5 items-center">
-    <h1 class="text-4xl font-bold text-center mt-16">Preprocess</h1>
-    <p class="text-center text-lg max-w-[40rem]">Detect the landmarks in the images and collect the data for each image.</p>
-  </div>
+<Template
+  description="Detect the landmarks in the images and collect the data for each image."
+  title="Preprocess">
   <div class="w-full flex flex-row justify-start items-start gap-10 p-4">
     <div>
       <div class="card w-64 min-h-80 bg-base-100 shadow-xl sticky top-0 border-primary border-t-2">
-        <Tab
-          {activeTab}
-          {setActiveTab}
-          {tabContent} />
         <div class="card-title pb-0 py-4 flex flex-col items-center justify-between">
           <img
             alt="dataset"
@@ -83,12 +79,18 @@
         </div>
       </div>
     </div>
-    <div class="w-full h-full grid 2xl:grid-cols-6 grid-cols-4 gap-10">
-      {#each dataset.labels as label}
-        <DatasetLabelCard
-          datasetName={name}
-          datasetLabel={label} />
-      {/each}
-    </div>
+    {#if dataset.labels.length === 0}
+      <div class="w-full h-full flex flex-col justify-center items-center gap-10">
+        <Loading centered={false} />
+      </div>
+    {:else}
+      <div class="w-full h-full grid 2xl:grid-cols-6 grid-cols-4 gap-10">
+        {#each dataset.labels as label}
+          <DatasetLabelCard
+            datasetName={name}
+            datasetLabel={label} />
+        {/each}
+      </div>
+    {/if}
   </div>
-</div>
+</Template>

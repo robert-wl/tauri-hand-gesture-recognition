@@ -1,15 +1,12 @@
 <script lang="ts">
   import MenuCard from "../lib/components/home/MenuCard.svelte";
   import { Link } from "svelte-routing";
+  import Template from "../lib/components/Template.svelte";
 </script>
 
-<div class="w-full h-full flex flex-col justify-start items-center gap-4 p-4">
-  <div class="flex flex-col py-5 gap-5 items-center">
-    <h1 class="text-4xl font-bold text-center mt-16">Hand Gesture Recognition</h1>
-    <p class="text-center text-lg max-w-[40rem]">
-      A Machine Learning Project to Recognize Hand Gestures, Preprocessed using MediaPipe Framework and Trained using Support Vector Machine Model
-    </p>
-  </div>
+<Template
+  description="A Machine Learning Project to Recognize Hand Gestures, Preprocessed using MediaPipe Framework and Trained using Support Vector Machine Model"
+  title="Hand Gesture Recognition">
   <div class="w-full flex flex-wrap justify-center items-center gap-4 p-4">
     <Link to="/preprocess-dataset">
       <MenuCard
@@ -23,9 +20,11 @@
         text="Train a Support Vector Machine Model with to classify Hand Gestures"
         title="Model Training" />
     </Link>
-    <MenuCard
-      imageUrl="/home/model-testing.png"
-      text="View Model Performance Metrics and Confusion Matrix and Test the Model on New Hand Gestures"
-      title="Model Testing" />
+    <Link to="/testing-dataset">
+      <MenuCard
+        imageUrl="/home/model-testing.png"
+        text="View Model Performance Metrics and Confusion Matrix and Test the Model on New Hand Gestures"
+        title="Model Testing" />
+    </Link>
   </div>
-</div>
+</Template>

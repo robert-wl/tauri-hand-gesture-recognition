@@ -16,7 +16,6 @@
   </div>
   <div class="card-body pt-2 flex flex-col h-full items-start justify-start">
     <table class="table">
-      <!-- head -->
       <thead>
         <tr>
           <th>Specifications</th>

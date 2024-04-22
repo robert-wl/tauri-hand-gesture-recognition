@@ -1,10 +1,9 @@
 <script lang="ts">
   import { scale, fade } from "svelte/transition";
-  import ModelService from "../../../services/model-service";
-  import type { Model, ModelHyperparameter } from "../../../../bindings";
+  import type { ModelHyperparameter } from "../../../../bindings";
 
   export let name: string;
-  export let trainModel: (modelName: string, hyperparameter: ModelHyperparameter) => void;
+  export let trainModel: (modelName: string, hyperparameter: ModelHyperparameter) => Promise<void>;
 
   let hyperparameters: ModelHyperparameter = {
     C: "1.0",
@@ -14,10 +13,9 @@
   };
 
   let isLoading = false;
-  let model: Nullable<Model>;
   let modelName: Nullable<string>;
 
-  const validateHyperparameters = (params) => {
+  const validateHyperparameters = (params: ModelHyperparameter) => {
     if (isNaN(Number(params.C)) || Number(params.C) <= 0) {
       return false;
     }
@@ -28,15 +26,13 @@
     }
 
     const gamma = Number(params.gamma);
-    if (params.gamma !== "auto" && params.gamma !== "scale" && (isNaN(gamma) || gamma <= 0)) {
-      return false;
-    }
-    return true;
+
+    return !(params.gamma !== "auto" && params.gamma !== "scale" && (isNaN(gamma) || gamma <= 0));
   };
 
   const handleTrain = async () => {
     isLoading = true;
-    await trainModel(modelName, hyperparameters);
+    await trainModel(modelName!, hyperparameters);
     isLoading = false;
   };
 
@@ -88,7 +84,7 @@
   {#if modelName}
     <div
       in:scale={{ duration: 200, opacity: 0.5, start: 0.5 }}
-      out:fade={{ duration: 200, opacity: 0.5 }}
+      out:fade={{ duration: 200 }}
       class="card w-[35rem] bg-base-100 shadow-xl sticky top-0 border-primary border-t-2">
       <div class="card-title flex flex-col justify-center items-center w-full py-2 gap-0">
         <h2 class="text-xl font-bold">Hyperparameter Tuning</h2>
@@ -119,7 +115,7 @@
           {#if showPoly}
             <div
               in:scale={{ duration: 200, opacity: 0.5, start: 0.5 }}
-              out:fade={{ duration: 200, opacity: 0.5 }}
+              out:fade={{ duration: 200 }}
               class="form-control w-4/5 max-w-xs">
               <div class="label">
                 <span class="label-text">Degree</span>
