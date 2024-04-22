@@ -1,14 +1,11 @@
-use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 
-use base64::engine::general_purpose;
-use base64::Engine;
 use tauri::Manager;
 
 use crate::constants::{
-    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODELS_DIRECTORY, MODEL_SPECIFICATION_JSON,
+    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_SPECIFICATION_JSON, MODELS_DIRECTORY,
     PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY,
 };
 use crate::dataset::api::DatasetApi;
@@ -17,7 +14,7 @@ use crate::dataset::dataset::{
 };
 use crate::model::model::ModelSpecification;
 use crate::py_utils::run_script;
-use crate::utils::{get_directory_content, get_random_file, remove_directory_content, FileType};
+use crate::utils::{FileType, get_directory_content, get_random_file, read_file, remove_directory_content};
 
 #[derive(Clone)]
 pub struct DatasetApiImpl;
@@ -25,36 +22,37 @@ pub struct DatasetApiImpl;
 #[taurpc::resolvers]
 impl DatasetApi for DatasetApiImpl {
     async fn get_all(self) -> Result<Vec<GeneralDataset>, String> {
-        let mut datasets = Vec::new();
-
         let dataset_dirs =
             get_directory_content(Path::new(DATASET_DIRECTORY), &FileType::Directory);
 
-        for dir in dataset_dirs {
-            let name = dir
-                .file_name()
-                .unwrap()
-                .to_os_string()
-                .into_string()
-                .unwrap();
+        let datasets = dataset_dirs
+            .iter()
+            .map(|dir| {
+                let name = dir
+                    .file_name()
+                    .unwrap()
+                    .to_os_string()
+                    .into_string()
+                    .unwrap();
 
-            let mut dataset = GeneralDataset {
-                name: name.clone(),
-                label_amount: 0,
-                data_amount: 0,
-            };
+                let mut dataset = GeneralDataset {
+                    name,
+                    label_amount: 0,
+                    data_amount: 0,
+                };
 
-            let label_dir = Path::new(&dir);
+                let label_dir = Path::new(&dir);
 
-            let label_dirs = get_directory_content(label_dir, &FileType::Directory);
+                let label_dirs = get_directory_content(label_dir, &FileType::Directory);
 
-            dataset.label_amount = label_dirs.len() as u16;
-            for dir in label_dirs {
-                dataset.data_amount += get_directory_content(&dir, &FileType::File).len() as u16;
-            }
+                dataset.label_amount = label_dirs.len() as u32;
+                for dir in label_dirs {
+                    dataset.data_amount += get_directory_content(&dir, &FileType::File).len() as u32;
+                }
 
-            datasets.push(dataset);
-        }
+                dataset
+            })
+            .collect();
 
         Ok(datasets)
     }
@@ -70,28 +68,29 @@ impl DatasetApi for DatasetApiImpl {
                 let csv = dataset.join(PROCESSED_OUTPUT_CSV);
                 let file = File::open(csv);
 
-                if file.is_ok() {
-                    let name = dataset
-                        .file_name()
-                        .unwrap()
-                        .to_os_string()
-                        .into_string()
-                        .unwrap();
-
-                    let mut rdt = csv::Reader::from_reader(file.unwrap());
-
-                    let data_amount = rdt.records().count() as u16;
-                    let feature_count = (rdt.headers().unwrap().len() - 2) as u16;
-
-                    let model_dataset = TrainingDataset {
-                        name,
-                        data_amount,
-                        feature_count,
-                    };
-
-                    return Some(model_dataset);
+                if file.is_err() {
+                    return None;
                 }
-                None
+
+                let name = dataset
+                    .file_name()
+                    .unwrap()
+                    .to_os_string()
+                    .into_string()
+                    .unwrap();
+
+                let mut rdt = csv::Reader::from_reader(file.unwrap());
+
+                let data_amount = rdt.records().count() as u32;
+                let feature_count = (rdt.headers().unwrap().len() - 2) as u32;
+
+                let model_dataset = TrainingDataset {
+                    name,
+                    data_amount,
+                    feature_count,
+                };
+
+                Some(model_dataset)
             })
             .collect();
 
@@ -105,7 +104,7 @@ impl DatasetApi for DatasetApiImpl {
 
         let testing_datasets: Vec<TestingDataset> = model_dirs
             .iter()
-            .filter_map(|dir| {
+            .map(|dir| {
                 let json = dir.join(MODEL_SPECIFICATION_JSON);
 
                 let mut file = File::open(json).expect("Failed to open specification.json");
@@ -124,13 +123,11 @@ impl DatasetApi for DatasetApiImpl {
                     .into_string()
                     .unwrap();
 
-                let testing_dataset = TestingDataset {
+                TestingDataset {
                     name,
                     dataset_name: model.dataset_name,
                     accuracy: model.accuracy,
-                };
-
-                Some(testing_dataset)
+                }
             })
             .collect();
 
@@ -216,9 +213,11 @@ impl DatasetApi for DatasetApiImpl {
             return Err("Failed to get random image".to_string());
         }
 
-        let thumbnail = fs::read(random_file.unwrap()).unwrap_or_default();
+        let base64_thumbnail = match read_file(&random_file.unwrap()) {
+            Some(base64_thumbnail) => base64_thumbnail,
+            None => return Err("Failed to read random image".to_string()),
+        };
 
-        let base64_thumbnail = general_purpose::STANDARD.encode(thumbnail);
         Ok(base64_thumbnail)
     }
 
@@ -231,9 +230,11 @@ impl DatasetApi for DatasetApiImpl {
             return Err("Failed to get random processed image".to_string());
         }
 
-        let thumbnail = fs::read(random_file.unwrap()).unwrap_or_default();
+        let base64_thumbnail = match read_file(&random_file.unwrap()) {
+            Some(base64_thumbnail) => base64_thumbnail,
+            None => return Err("Failed to read random processed image".to_string()),
+        };
 
-        let base64_thumbnail = general_purpose::STANDARD.encode(thumbnail);
         Ok(base64_thumbnail)
     }
 
@@ -243,9 +244,10 @@ impl DatasetApi for DatasetApiImpl {
             .join(label)
             .join(data);
 
-        let thumbnail = fs::read(file_dir).expect("failed to read thumbnail");
-
-        let base64_thumbnail = general_purpose::STANDARD.encode(thumbnail);
+        let base64_thumbnail = match read_file(&file_dir) {
+            Some(base64_thumbnail) => base64_thumbnail,
+            None => return Err("Failed to read image".to_string()),
+        };
 
         Ok(base64_thumbnail)
     }
@@ -261,15 +263,9 @@ impl DatasetApi for DatasetApiImpl {
             .join(label)
             .join(data);
 
-        let thumbnail = fs::read(dataset_dir).unwrap_or_default();
+        let base64_thumbnail = read_file(&dataset_dir);
 
-        if thumbnail.is_empty() {
-            return Ok(None);
-        }
-
-        let base64_thumbnail = general_purpose::STANDARD.encode(thumbnail);
-
-        Ok(Option::from(base64_thumbnail))
+        Ok(base64_thumbnail)
     }
 
     async fn preprocess(self, name: String, app_handle: tauri::AppHandle) -> Result<(), String> {
@@ -281,7 +277,7 @@ impl DatasetApi for DatasetApiImpl {
         let label_dirs = get_directory_content(&in_path, &FileType::Directory);
 
         for dir in label_dirs {
-            let data_count = get_directory_content(&dir, &FileType::File).len() as u16;
+            let data_count = get_directory_content(&dir, &FileType::File).len() ;
             let label = dir.file_name().unwrap().to_str().unwrap().to_string();
             let in_dir_str = dir.to_str().unwrap().to_string();
             let out_dir_str = out_path.join(&label).to_str().unwrap().to_string();
@@ -302,14 +298,16 @@ impl DatasetApi for DatasetApiImpl {
                 let payload = ProgressPayload {
                     name: name.clone(),
                     label: label.clone(),
-                    current_amount: (current_amount + 1) as u16,
-                    total_amount: data_count,
+                    current_amount: (current_amount + 1) as u32,
+                    total_amount: data_count as u32,
                 };
 
+                println!("progress_{}", current_amount);
                 app_handle
                     .emit_all(format!("progress_{}", label).as_str(), payload)
                     .expect("failed to emit event");
             }
+
 
             let stderr = child.stderr.take().unwrap();
             let reader = BufReader::new(stderr);

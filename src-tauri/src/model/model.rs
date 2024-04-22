@@ -1,8 +1,5 @@
 use std::collections::HashMap;
 
-use serde::Deserialize;
-use specta::Type;
-
 #[taurpc::ipc_type]
 pub struct Model {
     pub name: String,
@@ -45,4 +42,10 @@ pub struct Metrics {
     #[serde(rename = "f1-score")]
     pub f1: f32,
     pub support: f32,
+}
+
+#[taurpc::ipc_type]
+pub struct ModelPrediction {
+    pub class: String,
+    pub image_result: String,
 }

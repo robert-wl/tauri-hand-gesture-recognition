@@ -1,18 +1,16 @@
-use std::io::{BufRead, BufReader};
 use std::os::windows::process::CommandExt;
 use std::path::Path;
-use std::process::{Child, Command, ExitStatus, Stdio};
+use std::process::{Child, Command, Stdio};
 
-use tauri::Manager;
-
-const CREATE_NO_WINDOW: u32 = 0x08000000;
-const VENV_DIR: &str = ".venv";
+use crate::constants::{CREATE_NO_WINDOW_FLAGS, VENV_DIRECTORY};
 
 pub fn run_script(script_path: &Path, args: Vec<String>) -> Child {
     let venv_path = if cfg!(windows) {
-        Path::new(VENV_DIR).join("Scripts").join("activate.bat")
+        Path::new(VENV_DIRECTORY)
+            .join("Scripts")
+            .join("activate.bat")
     } else {
-        Path::new(VENV_DIR).join("bin").join("activate")
+        Path::new(VENV_DIRECTORY).join("bin").join("activate")
     };
 
     let activate_script = venv_path.to_str().unwrap();
@@ -31,7 +29,7 @@ pub fn run_script(script_path: &Path, args: Vec<String>) -> Child {
         .args(&command_args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .creation_flags(CREATE_NO_WINDOW)
+        .creation_flags(CREATE_NO_WINDOW_FLAGS)
         .spawn()
         .map_err(|e| format!("Failed to execute Python script: {}", e))
         .unwrap()

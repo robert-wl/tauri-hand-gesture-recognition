@@ -8,15 +8,15 @@ pub struct TestingDataset {
 #[taurpc::ipc_type]
 pub struct TrainingDataset {
     pub name: String,
-    pub data_amount: u16,
-    pub feature_count: u16,
+    pub data_amount: u32,
+    pub feature_count: u32,
 }
 
 #[taurpc::ipc_type]
 pub struct GeneralDataset {
     pub name: String,
-    pub label_amount: u16,
-    pub data_amount: u16,
+    pub label_amount: u32,
+    pub data_amount: u32,
 }
 
 #[taurpc::ipc_type]
@@ -36,6 +36,6 @@ pub struct Label {
 pub struct ProgressPayload {
     pub name: String,
     pub label: String,
-    pub current_amount: u16,
-    pub total_amount: u16,
+    pub current_amount: u32,
+    pub total_amount: u32,
 }
