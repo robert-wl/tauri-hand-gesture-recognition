@@ -38,7 +38,7 @@
             src={imageUrl} />
           <button
             on:click={removeImage}
-            class="opacity-0 transition-opacity duration-200 bg-white rounded-full text-red-500 group-hover:opacity-100 flex items-center justify-center absolute top-1/2 right-1/2 transform translate-x-1/2">
+            class="opacity-0 hover:bg-gray-300 transition-all duration-200 bg-white rounded-full text-red-500 group-hover:opacity-100 flex items-center justify-center absolute top-1/2 right-1/2 transform translate-x-1/2">
             <CrossIcon
               width="3rem"
               height="3rem" />

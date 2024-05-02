@@ -46,8 +46,9 @@
       },
       "resources": [
         "./scripts/*",
-
-        "./setup-venv.bat"
+        "./.venv.empty/*",
+        "./setup-venv.bat",
+        "./WebView2Loader.dll"
       ],
       "shortDescription": "",
       "targets": "all",

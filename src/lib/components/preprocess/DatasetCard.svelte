@@ -28,7 +28,7 @@
 <div
   class="card w-64 min-h-40 bg-base-100 shadow-xl border-primary border-t-2"
   in:scale|global={{ duration: 200, opacity: 0.5, start: 0.5 }}>
-  <div class="card-title flex flex-col gap-0">
+  <div class="card-title flex flex-col gap-0 relative group">
     {#if !thumbnail}
       <div class="flex items-center w-full justify-center h-48">
         <p class="text-center text-lg"></p>
@@ -43,7 +43,7 @@
         src={`data:image/jpeg;base64,${thumbnail}`} />
     {/if}
     <button
-      class="btn btn-sm px-1.5 btn-ghost hover:bg-transparent hover:scale-110 rounded-md shadow-none outline-none text-black absolute top-0 right-0"
+      class="opacity-0 hover:bg-gray-300 hover:scale-110 transition-all duration-200 bg-white p-1 rounded-full text-black group-hover:opacity-100 flex items-center justify-center absolute top-1/2 right-1/2 transform translate-x-1/2 -translate-y-1/2"
       on:click={getThumbnail}>
       <RefreshIcon
         height="1.5em"
