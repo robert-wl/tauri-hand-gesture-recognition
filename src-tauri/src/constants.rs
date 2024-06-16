@@ -6,6 +6,7 @@ pub const TEMP_DIRECTORY: &str = "temp";
 pub const VENV_DIRECTORY: &str = ".venv";
 
 pub const CONVERTER_SCRIPT: &str = "preprocess.py";
+pub const GRAPH_SCRIPT: &str = "preprocess_graph_generator.py";
 pub const TRAIN_SCRIPT: &str = "train.py";
 pub const PREDICT_SCRIPT: &str = "predict.py";
 

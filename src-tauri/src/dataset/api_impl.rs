@@ -5,8 +5,8 @@ use std::path::Path;
 use tauri::Manager;
 
 use crate::constants::{
-    CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON,
-    PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY,
+  CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON,
+  PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, GRAPH_SCRIPT
 };
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::{
@@ -272,24 +272,25 @@ impl DatasetApi for DatasetApiImpl {
         let in_path = Path::new(DATASET_DIRECTORY).join(&name);
         let out_path = Path::new(PROCESSED_DIRECTORY).join(&name);
 
-        remove_directory_content(&out_path);
+        //remove_directory_content(&out_path);
 
         let label_dirs = get_directory_content(&in_path, &FileType::Directory);
+        let out_csv_str = out_path
+            .join(PROCESSED_OUTPUT_CSV)
+            .to_str()
+            .unwrap()
+            .to_string();
+
 
         for dir in label_dirs {
             let data_count = get_directory_content(&dir, &FileType::File).len() ;
             let label = dir.file_name().unwrap().to_str().unwrap().to_string();
             let in_dir_str = dir.to_str().unwrap().to_string();
             let out_dir_str = out_path.join(&label).to_str().unwrap().to_string();
-            let out_csv_str = out_path
-                .join(PROCESSED_OUTPUT_CSV)
-                .to_str()
-                .unwrap()
-                .to_string();
 
             let script_path = Path::new(SCRIPTS_DIRECTORY).join(CONVERTER_SCRIPT);
 
-            let mut child = run_script(&script_path, vec![in_dir_str, out_dir_str, out_csv_str]);
+            let mut child = run_script(&script_path, vec![in_dir_str, out_dir_str, out_csv_str.clone()]);
 
             let stdout = child.stdout.take().unwrap();
             let reader = BufReader::new(stdout);
@@ -322,6 +323,28 @@ impl DatasetApi for DatasetApiImpl {
                 return Err("Failed to preprocess dataset".to_string());
             }
         }
+
+
+        let script_path = Path::new(SCRIPTS_DIRECTORY).join(GRAPH_SCRIPT);
+
+        let out_path_str = out_path.to_str().unwrap().to_string();
+
+
+        let mut child = run_script(&script_path, vec![out_csv_str, out_path_str]);
+
+        let stderr = child.stderr.take().unwrap();
+        let reader = BufReader::new(stderr);
+
+        for line in reader.lines() {
+            println!("{}", line.unwrap());
+        }
+
+        let status = child.wait().expect("failed to wait on child");
+
+        if !status.success() {
+            return Err("Failed to preprocess dataset".to_string());
+        }
+
 
         Ok(())
     }

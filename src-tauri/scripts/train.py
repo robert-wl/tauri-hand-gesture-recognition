@@ -27,6 +27,7 @@ DEFAULT_OUTPUT_PATH = "model"
 DEFAULT_CONFUSION_MATRIX_NAME = "confusion_matrix.png"
 DEFAULT_JSON_NAME = "specification.json"
 
+logs = []
 
 def make_dir(path: str) -> None:
     path_list = path.split("\\")
@@ -105,7 +106,7 @@ class SVMModel:
         self.label = None
         self.data_class = None
 
-    def preprocess(self, path: str) -> Self:
+    def preprocess(self, path: str) -> None:
         raw_data = pd.read_csv(path)
 
         label = raw_data["Label"]
@@ -123,9 +124,8 @@ class SVMModel:
         self.label = label
         self.data_class = data_class
 
-        return self
 
-    def train_evaluate(self) -> Self:
+    def train_evaluate(self) -> None:
         data_train, data_test, label_train, label_test = train_test_split(
             self.np_data, self.label, test_size=0.3, random_state=42
         )
@@ -165,9 +165,8 @@ class SVMModel:
             'data_class': self.data_class.tolist()
         }
 
-        return self
 
-    def save(self) -> Self:
+    def save(self) -> None:
         save_model(self.model, self.model_name, file_name=DEFAULT_MODEL_NAME)
         save_model(self.scaler, self.model_name, file_name=DEFAULT_SCALER_NAME)
         save_json(self.specifications, self.model_name)
@@ -176,7 +175,6 @@ class SVMModel:
             np.array(self.data_class),
             self.model_name
         )
-        return self
 
 
 if __name__ == "__main__":
@@ -191,4 +189,7 @@ if __name__ == "__main__":
     gamma = "scale" if gamma == "scale" else "auto" if gamma == "auto" else float(gamma)
     c = float(c)
 
-    SVMModel(model_name, dataset_path, kernel, c, gamma, degree).preprocess(dataset_path).train_evaluate().save()
+    model = SVMModel(model_name, dataset_path, kernel, c, gamma, degree)
+    model.preprocess(dataset_path)
+    model.train_evaluate()
+    model.save()
