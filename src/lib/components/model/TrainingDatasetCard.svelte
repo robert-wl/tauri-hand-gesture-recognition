@@ -61,5 +61,10 @@
       to={`/training-dataset/${dataset.name}`}>
       Select Dataset
     </Link>
+    <Link
+      class="btn bg-red-500 hover:bg-red-600 btn-sm min-h-0 h-fit font-bold text-white py-2.5 mt-2 w-full"
+      to={`/preprocess-dataset/${dataset.name}`}>
+      Preview Dataset
+    </Link>
   </div>
 </div>
