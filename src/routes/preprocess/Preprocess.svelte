@@ -47,7 +47,7 @@
   });
 
   $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
-  $: isFullyPreprocessed = dataset.labels && dataset.labels.every((label) => label.is_preprocessed);
+  $: isFullyPreprocessed = (dataset.labels || !isLoading) && dataset.labels.every((label) => label.is_preprocessed);
   $: getGraphData(), [name];
 </script>
 
