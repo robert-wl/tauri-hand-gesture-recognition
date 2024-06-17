@@ -1,13 +1,11 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 
 use tauri::Manager;
 
-use crate::constants::{
-  CONVERTER_SCRIPT, DATASET_DIRECTORY, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON,
-  PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, GRAPH_SCRIPT
-};
+use crate::constants::{CONVERTER_SCRIPT, DATASET_DIRECTORY, GRAPH_SCRIPT, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, PROCESSED_OUTPUT_LDA_GRAPH, PROCESSED_OUTPUT_PCA_GRAPH, PROCESSED_OUTPUT_TSNE_GRAPH, SCRIPTS_DIRECTORY};
 use crate::dataset::api::DatasetApi;
 use crate::dataset::dataset::{
     Dataset, GeneralDataset, Label, ProgressPayload, TestingDataset, TrainingDataset,
@@ -272,7 +270,7 @@ impl DatasetApi for DatasetApiImpl {
         let in_path = Path::new(DATASET_DIRECTORY).join(&name);
         let out_path = Path::new(PROCESSED_DIRECTORY).join(&name);
 
-        //remove_directory_content(&out_path);
+        remove_directory_content(&out_path);
 
         let label_dirs = get_directory_content(&in_path, &FileType::Directory);
         let out_csv_str = out_path
@@ -347,5 +345,27 @@ impl DatasetApi for DatasetApiImpl {
 
 
         Ok(())
+    }
+
+    async fn get_processed_graphs(self, name: String) -> Result<HashMap<String, String>, String> {
+        let processed_dir = Path::new(PROCESSED_DIRECTORY).join(name);
+
+        let graph_names = vec![PROCESSED_OUTPUT_LDA_GRAPH, PROCESSED_OUTPUT_PCA_GRAPH, PROCESSED_OUTPUT_TSNE_GRAPH];
+        
+        let mut graphs: HashMap<String, String> = HashMap::new();
+        
+        for graph in graph_names {
+            let graph_path = processed_dir.join(graph);
+            let base64_thumbnail = match read_file(&graph_path) {
+                Some(base64_thumbnail) => base64_thumbnail,
+                None => return Err("Failed to read graph".to_string()),
+            };
+            
+            let graph_str = graph.to_string();
+
+            graphs.insert(graph_str, base64_thumbnail);
+        }
+
+        Ok(graphs)
     }
 }

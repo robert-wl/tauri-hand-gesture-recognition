@@ -4,12 +4,15 @@
   import DatasetLabelCard from "../../lib/components/preprocess/DatasetLabelCard.svelte";
   import Template from "../../lib/components/Template.svelte";
   import NProgress from "nprogress";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import Loading from "../../lib/components/Loading.svelte";
+  import DatasetGraphCard from "../../lib/components/preprocess/DatasetGraphCard.svelte";
 
   export let name: string = "";
 
+  let isGrid = true;
   let isLoading = false;
+  let graphData: Map<string, string> = new Map();
   let dataset: Dataset = {
     name: "",
     labels: [],
@@ -34,11 +37,18 @@
     isLoading = false;
   };
 
-  $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
+  const getGraphData = async () => {
+    const data = await DatasetService.getPreprocessedGraph(name);
+    graphData = new Map(Object.entries(data));
+  };
 
   onMount(() => {
     getDataset();
   });
+
+  $: dataLength = dataset.labels.reduce((acc, val) => acc + val.data.length, 0);
+  $: isFullyPreprocessed = dataset.labels && dataset.labels.every((label) => label.is_preprocessed);
+  $: getGraphData(), [name];
 </script>
 
 <Template
@@ -73,6 +83,21 @@
               Preprocess Dataset
             </button>
           {/if}
+          {#if isFullyPreprocessed}
+            {#if isGrid}
+              <button
+                class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+                on:click={() => (isGrid = false)}>
+                View Data
+              </button>
+            {:else}
+              <button
+                class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+                on:click={() => (isGrid = true)}>
+                View Images
+              </button>
+            {/if}
+          {/if}
         </div>
       </div>
     </div>
@@ -80,12 +105,18 @@
       <div class="w-full h-full flex flex-col justify-center items-center gap-10">
         <Loading centered={false} />
       </div>
-    {:else}
+    {:else if isGrid}
       <div class="w-full h-full grid 2xl:grid-cols-6 grid-cols-4 gap-10">
         {#each dataset.labels as label}
           <DatasetLabelCard
             datasetName={name}
             datasetLabel={label} />
+        {/each}
+      </div>
+    {:else}
+      <div class="w-full h-full flex flex-col gap-10">
+        {#each graphData as [_, value]}
+          <DatasetGraphCard image={value} />
         {/each}
       </div>
     {/if}

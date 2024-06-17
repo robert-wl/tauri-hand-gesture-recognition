@@ -6,6 +6,7 @@
   import { scale, fade } from "svelte/transition";
 
   export let dataset: TrainingDataset;
+
   let imageElement: Optional<HTMLImageElement> = undefined;
   let thumbnail: string = "";
 

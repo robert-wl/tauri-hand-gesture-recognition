@@ -18,7 +18,6 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-from typing import Self
 
 ZERO_PAD_CONSTANT = 10e-6
 DEFAULT_MODEL_NAME = "model.pkl"
@@ -189,7 +188,9 @@ if __name__ == "__main__":
     gamma = "scale" if gamma == "scale" else "auto" if gamma == "auto" else float(gamma)
     c = float(c)
 
-    model = SVMModel(model_name, dataset_path, kernel, c, gamma, degree)
+    dataset_name = dataset_path.split("\\")[-2]
+
+    model = SVMModel(model_name, dataset_name, kernel, c, gamma, degree)
     model.preprocess(dataset_path)
     model.train_evaluate()
     model.save()

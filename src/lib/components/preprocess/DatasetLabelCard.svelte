@@ -2,8 +2,8 @@
   import type { Label, ProgressPayload } from "../../../../bindings";
   import DatasetService from "../../../services/dataset-service";
   import ProgressBar from "../ProgressBar.svelte";
-  import { onMount } from "svelte";
-  import { listen } from "@tauri-apps/api/event";
+  import { onDestroy, onMount } from "svelte";
+  import { listen, type UnlistenFn } from "@tauri-apps/api/event";
   import RefreshIcon from "../icons/RefreshIcon.svelte";
   import ImageIcon from "../icons/ImageIcon.svelte";
   import { scale, fade } from "svelte/transition";
@@ -13,6 +13,7 @@
 
   let chosenImage: string = "";
   let progress: number = 0;
+  let unlistener: UnlistenFn;
 
   const getRawImage = async (image: string) => {
     return await DatasetService.getRawImage(datasetName, datasetLabel.name, image);
@@ -23,7 +24,7 @@
   };
 
   const initListener = async () => {
-    await listen(`progress_${datasetLabel.name}`, (event: TauriEvent<ProgressPayload>) => {
+    unlistener = await listen(`progress_${datasetLabel.name}`, (event: TauriEvent<ProgressPayload>) => {
       progress = (event.payload.current_amount / event.payload.total_amount) * 100;
 
       if (progress >= 100) {
@@ -39,6 +40,10 @@
   onMount(() => {
     initListener();
     randomizeImage();
+  });
+
+  onDestroy(() => {
+    unlistener();
   });
 
   $: thumbnail = datasetLabel && datasetLabel.is_preprocessed ? getProcessedImage(chosenImage) : getRawImage(chosenImage);

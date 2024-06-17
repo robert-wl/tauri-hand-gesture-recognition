@@ -6,6 +6,11 @@
   import NProgress from "nprogress";
   import Loading from "../../lib/components/Loading.svelte";
   import EmptyTrainDatasetCard from "../../lib/components/model/EmptyTrainDatasetCard.svelte";
+  import type { Model } from "../../../bindings";
+  import ClassificationReport from "../../lib/components/model/ClassificationReport.svelte";
+  import SpecificationReport from "../../lib/components/model/SpecificationReport.svelte";
+  import ConfusionMatrixReport from "../../lib/components/model/ConfusionMatrixReport.svelte";
+  import ModelService from "../../services/model-service";
 
   const fetchData = async () => {
     NProgress.start();

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::dataset::dataset::{Dataset, GeneralDataset, Label, TestingDataset, TrainingDataset};
 
 #[taurpc::procedures(path = "dataset")]
@@ -17,4 +19,5 @@ pub trait DatasetApi {
         label: String,
         data: String,
     ) -> Result<Option<String>, String>;
+    async fn get_processed_graphs(name: String) -> Result<HashMap<String, String>, String>;
 }

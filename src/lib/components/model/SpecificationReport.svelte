@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { Model } from "../../../../bindings";
   import { scale } from "svelte/transition";
+  import { Link } from "svelte-routing";
 
   export let model: Model;
-  export let saveModel: () => void;
-  export let retrainModel: () => void;
+  export let saveModel: Nullable<() => void> = null;
+  export let retrainModel: Nullable<() => void> = null;
+  export let isPreview: boolean = false;
 </script>
 
 <div
@@ -59,11 +61,22 @@
         </tr>
       </tbody>
     </table>
-    <button
-      class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
-      on:click={saveModel}>Save Model</button>
-    <button
-      class="btn btn-error btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
-      on:click={retrainModel}>Retrain Model</button>
+    {#if saveModel}
+      <button
+        class="btn btn-primary btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+        on:click={saveModel}>Save Model</button>
+    {/if}
+    {#if retrainModel}
+      <button
+        class="btn btn-error btn-sm text-white min-h-0 h-fit font-bold py-2.5 mt-2 w-full"
+        on:click={retrainModel}>Retrain Model</button>
+    {/if}
+    {#if isPreview}
+      <Link
+        class="btn btn-primary btn-sm min-h-0 h-fit font-bold text-white py-2.5 mt-2 w-full"
+        to={`/testing-dataset/${model.name}`}>
+        Select Model
+      </Link>
+    {/if}
   </div>
 </div>

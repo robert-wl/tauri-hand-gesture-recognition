@@ -17,7 +17,7 @@
     <Link to="/training-dataset">
       <MenuCard
         imageUrl="/home/model-training.png"
-        text="Train a Support Vector Machine Model with to classify Hand Gestures"
+        text="Train a Support Vector Machine Model to classify Hand Gestures"
         title="Model Training" />
     </Link>
     <Link to="/testing-dataset">
