@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "frontend",
+    "productName": "Hand Sign Recognizer",
     "version": "0.1.0"
   },
   "tauri": {

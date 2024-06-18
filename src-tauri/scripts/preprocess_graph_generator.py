@@ -41,15 +41,13 @@ def generate_graphs(csv_path: str, output_path: str) -> None:
         ax.set_xlabel(f"{key} 1")
         ax.set_ylabel(f"{key} 2")
         plt.tight_layout(rect=(0., 0., 1., 1.))
-        fig.suptitle('LDA Transformed Data', y=1.02)
+        fig.suptitle(f'{key} Transformed Data', y=1.02)
         plt.savefig(os.path.join(output_path, f"{key}.png"), bbox_inches='tight')
-    print("fin final")
 
 
 
 
 if __name__ == '__main__':
-    print("helo")
     csv_path = sys.argv[1]
     output_dir = sys.argv[2]
 

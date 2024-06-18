@@ -38,9 +38,7 @@
     path="/testing-dataset/:name">
     <Testing name={params.name} />
   </Route>
-  <Route
-    let:params
-    path="*">
+  <Route path="*">
     <Template />
   </Route>
 </Router>
