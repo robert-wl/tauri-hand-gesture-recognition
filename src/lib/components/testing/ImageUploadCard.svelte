@@ -29,7 +29,7 @@
     <div class="flex items-center justify-center w-full">
       <label
         class="flex flex-col items-center justify-center w-full h-64 border-2 {imageUrl ??
-          'border-dashed border-accent cursor-pointer'} group rounded-lg bg-gray-50 hover:bg-gray-100"
+          'border-dashed border-accent cursor-pointer'} group rounded-lg bg-gray-50 transition-colors hover:bg-gray-100"
         for="dropzone-file">
         {#if imageUrl}
           <img

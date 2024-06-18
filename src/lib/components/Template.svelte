@@ -6,8 +6,8 @@
   import { scale } from "svelte/transition";
   import { exit } from "@tauri-apps/api/process";
 
-  export let title: string;
-  export let description: string;
+  export let title = "";
+  export let description = "";
 
   NProgress.done();
 
