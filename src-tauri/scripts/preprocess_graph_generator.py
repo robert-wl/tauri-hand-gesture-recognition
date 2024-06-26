@@ -1,16 +1,20 @@
+import numpy as np
 import os
-import sys
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+import sys
+from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.manifold import TSNE
-from matplotlib import pyplot as plt
-import numpy as np
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 
 def generate_graphs(csv_path: str, output_path: str) -> None:
     df = pd.read_csv(csv_path)
+
+    if len(df) > 1000:
+        df = df.sample(1000)
+
     x = df.drop(columns=["Image_No", "Label"]).values
     y = df["Label"].values
     classes = df["Label"].unique()

@@ -8,6 +8,8 @@ from mediapipe.python.solutions import drawing_utils, hands
 from mediapipe.python.solutions.drawing_utils import DrawingSpec
 from numpy import ndarray
 from sklearn import svm
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import MinMaxScaler
 
 DEFAULT_MODEL_NAME = "model.pkl"
@@ -95,7 +97,7 @@ class MediapipeConverter:
         return landmark_arr, annotated_image
 
 
-def read_model(path: str, file_name: str) -> svm.SVC | MinMaxScaler:
+def read_model(path: str, file_name: str) -> svm.SVC | LogisticRegression | KNeighborsClassifier | MinMaxScaler:
     model_path = os.path.join(path, file_name)
     with open(model_path, "rb") as file:
         model = pickle.load(file)

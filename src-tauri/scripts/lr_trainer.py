@@ -7,7 +7,7 @@ import pickle
 import seaborn as sns
 import sys
 from numpy import ndarray
-from sklearn import svm
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -25,6 +25,8 @@ DEFAULT_SCALER_NAME = "scaler.pkl"
 DEFAULT_OUTPUT_PATH = "model"
 DEFAULT_CONFUSION_MATRIX_NAME = "confusion_matrix.png"
 DEFAULT_JSON_NAME = "specification.json"
+LR_PENALTY = ["l2", "l1", "elasticnet", "none"]
+LR_SOLVER = ["lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"]
 
 logs = []
 
@@ -42,7 +44,7 @@ def make_dir(path: str) -> None:
 
 
 def save_model(
-        model: svm.SVC | MinMaxScaler,
+        model: LogisticRegression | MinMaxScaler,
         model_name: str,
         output_path: str = DEFAULT_OUTPUT_PATH,
         file_name: str = DEFAULT_MODEL_NAME,
@@ -89,11 +91,12 @@ def plot_heatmap(
     plt.savefig(path)
 
 
-class SupportVectorMachineModel:
-    def __init__(self, model_name: str, dataset_name: str, kernel: str, c: float, gamma: str | float, degree: int):
+class LogisticRegressionModel:
+
+    def __init__(self, model_name: str, dataset_name: str, penalty: str, c: float, solver: str, max_iter: int):
         self.model_name = model_name
         self.dataset_name = dataset_name
-        self.model = svm.SVC(kernel=kernel, C=c, gamma=gamma, degree=degree, verbose=True)
+        self.model = LogisticRegression(penalty=penalty, C=c, solver=solver, max_iter=max_iter)
         self.encoder = LabelEncoder()
         self.scaler = MinMaxScaler()
         self.specifications = {}
@@ -143,7 +146,7 @@ class SupportVectorMachineModel:
         hyperparameters = {key: str(value) for key, value in params.items()}
 
         self.specifications = {
-            "algorithm": "Support Vector Machine",
+            "algorithm": "Logistic Regression",
             "accuracy": accuracy,
             "precision": precision,
             "recall": recall,
@@ -156,7 +159,7 @@ class SupportVectorMachineModel:
                 "weighted_avg": report_weighted_avg,
             },
             'hyperparameters': {
-                'Svm': hyperparameters
+                'Lr': hyperparameters
             },
             'dataset_name': self.dataset_name,
             'name': model_name,
@@ -178,18 +181,21 @@ class SupportVectorMachineModel:
 if __name__ == "__main__":
     dataset_path = sys.argv[1]
     model_name = sys.argv[2]
-    kernel = sys.argv[3]
+    penalty = sys.argv[3]
     c = sys.argv[4]
-    gamma = sys.argv[5]
-    degree = sys.argv[6]
+    solver = sys.argv[5]
+    max_iter = sys.argv[6]
 
-    degree = int(degree) if kernel == "poly" else 3
-    gamma = "scale" if gamma == "scale" else "auto" if gamma == "auto" else float(gamma)
-    c = float(c)
+
+    penalty = penalty if penalty in LR_PENALTY else "l2"
+    c = float(c) if c != "None" else None
+    solver = solver if solver in LR_SOLVER else "lbfgs"
+    max_iter = int(max_iter) if max_iter != "None" else 100
+
 
     dataset_name = dataset_path.split("\\")[-2]
 
-    model = SupportVectorMachineModel(model_name, dataset_name, kernel, c, gamma, degree)
+    model = LogisticRegressionModel(model_name, dataset_name, penalty, c, solver, max_iter)
     model.preprocess(dataset_path)
     model.train_evaluate()
     model.save()

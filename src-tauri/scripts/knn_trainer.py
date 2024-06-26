@@ -7,7 +7,7 @@ import pickle
 import seaborn as sns
 import sys
 from numpy import ndarray
-from sklearn import svm
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -25,6 +25,9 @@ DEFAULT_SCALER_NAME = "scaler.pkl"
 DEFAULT_OUTPUT_PATH = "model"
 DEFAULT_CONFUSION_MATRIX_NAME = "confusion_matrix.png"
 DEFAULT_JSON_NAME = "specification.json"
+KNN_WEIGHTS = ["uniform", "distance"]
+KNN_ALGORITHMS = ["auto", "ball_tree", "kd_tree", "brute"]
+KNN_METRICS = ["euclidean", "manhattan", "chebyshev", "minkowski"]
 
 logs = []
 
@@ -42,7 +45,7 @@ def make_dir(path: str) -> None:
 
 
 def save_model(
-        model: svm.SVC | MinMaxScaler,
+        model: KNeighborsClassifier | MinMaxScaler,
         model_name: str,
         output_path: str = DEFAULT_OUTPUT_PATH,
         file_name: str = DEFAULT_MODEL_NAME,
@@ -89,11 +92,12 @@ def plot_heatmap(
     plt.savefig(path)
 
 
-class SupportVectorMachineModel:
-    def __init__(self, model_name: str, dataset_name: str, kernel: str, c: float, gamma: str | float, degree: int):
+class KNearestNeighborModel:
+
+    def __init__(self, model_name: str, dataset_name: str, n_neighbors: int, weights: str, algorithm: str, metric: str):
         self.model_name = model_name
         self.dataset_name = dataset_name
-        self.model = svm.SVC(kernel=kernel, C=c, gamma=gamma, degree=degree, verbose=True)
+        self.model = KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights, algorithm=algorithm, metric=metric)
         self.encoder = LabelEncoder()
         self.scaler = MinMaxScaler()
         self.specifications = {}
@@ -143,7 +147,7 @@ class SupportVectorMachineModel:
         hyperparameters = {key: str(value) for key, value in params.items()}
 
         self.specifications = {
-            "algorithm": "Support Vector Machine",
+            "algorithm": "K-Nearest Neighbors",
             "accuracy": accuracy,
             "precision": precision,
             "recall": recall,
@@ -156,7 +160,7 @@ class SupportVectorMachineModel:
                 "weighted_avg": report_weighted_avg,
             },
             'hyperparameters': {
-                'Svm': hyperparameters
+                'Knn': hyperparameters
             },
             'dataset_name': self.dataset_name,
             'name': model_name,
@@ -175,21 +179,26 @@ class SupportVectorMachineModel:
         )
 
 
+
+
+
 if __name__ == "__main__":
     dataset_path = sys.argv[1]
     model_name = sys.argv[2]
-    kernel = sys.argv[3]
-    c = sys.argv[4]
-    gamma = sys.argv[5]
-    degree = sys.argv[6]
+    n_neighbors = sys.argv[3]
+    algorithm = sys.argv[4]
+    weights = sys.argv[5]
+    metric = sys.argv[6]
 
-    degree = int(degree) if kernel == "poly" else 3
-    gamma = "scale" if gamma == "scale" else "auto" if gamma == "auto" else float(gamma)
-    c = float(c)
+
+    n_neighbors = int(n_neighbors)
+    weights = weights if weights in weights else "uniform"
+    algorithm = algorithm if algorithm in algorithm else "auto"
+    metric = metric if metric in metric else "minkowski"
 
     dataset_name = dataset_path.split("\\")[-2]
 
-    model = SupportVectorMachineModel(model_name, dataset_name, kernel, c, gamma, degree)
+    model = KNearestNeighborModel(model_name, dataset_name, n_neighbors, weights, algorithm, metric)
     model.preprocess(dataset_path)
     model.train_evaluate()
     model.save()
