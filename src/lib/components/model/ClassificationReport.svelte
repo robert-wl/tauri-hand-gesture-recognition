@@ -28,9 +28,9 @@
             {#each Object.entries(reportVal).sort(([a, _], [b, __]) => a.localeCompare(b)) as [key, value]}
               <tr>
                 <td>{key}</td>
-                <td>{value.precision.toFixed(2)}</td>
-                <td>{value.recall.toFixed(2)}</td>
-                <td>{value["f1-score"].toFixed(2)}</td>
+                <td>{value.precision.toFixed(4)}</td>
+                <td>{value.recall.toFixed(4)}</td>
+                <td>{value["f1-score"].toFixed(4)}</td>
                 <td>{value.support}</td>
               </tr>
             {/each}
@@ -39,14 +39,14 @@
               <td>{reportKey}</td>
               <td></td>
               <td></td>
-              <td>{(+reportVal).toFixed(2)}</td>
+              <td>{(+reportVal).toFixed(4)}</td>
             </tr>
           {:else if typeof reportVal !== "number"}
             <tr>
               <td>{reportKey}</td>
-              <td>{(+reportVal.precision).toFixed(2)}</td>
-              <td>{(+reportVal.recall).toFixed(2)}</td>
-              <td>{(+reportVal["f1-score"]).toFixed(2)}</td>
+              <td>{(+reportVal.precision).toFixed(4)}</td>
+              <td>{(+reportVal.recall).toFixed(4)}</td>
+              <td>{(+reportVal["f1-score"]).toFixed(4)}</td>
               <td>{reportVal.support}</td>
             </tr>
           {/if}

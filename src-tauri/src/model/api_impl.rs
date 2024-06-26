@@ -5,9 +5,9 @@ use std::path::Path;
 use base64::Engine;
 use base64::engine::general_purpose;
 
-use crate::constants::{CONFUSION_MATRIX_IMAGE, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PREDICT_SCRIPT, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, TEMP_DIRECTORY, TESTING_INPUT_IMAGE, TESTING_OUTPUT_IMAGE, TRAIN_SCRIPT};
+use crate::constants::{CONFUSION_MATRIX_IMAGE, KNN_TRAIN_SCRIPT, LR_TRAIN_SCRIPT, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PREDICT_SCRIPT, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, SVM_TRAIN_SCRIPT, TEMP_DIRECTORY, TESTING_INPUT_IMAGE, TESTING_OUTPUT_IMAGE};
 use crate::model::api::ModelApi;
-use crate::model::model::{Model, ModelHyperparameter, ModelPrediction, ModelSpecification};
+use crate::model::model::{Hyperparameters, Model, ModelPrediction, ModelSpecification};
 use crate::py_utils::run_script;
 use crate::utils::{FileType, get_directory_content, read_file, remove_directory_content, write_file};
 
@@ -20,7 +20,8 @@ impl ModelApi for ModelApiImpl {
         self,
         dataset_name: String,
         model_name: String,
-        hyperparameter: ModelHyperparameter,
+        algorithm: String,
+        hyperparameter: Hyperparameters,
     ) -> Result<(), String> {
         let csv = Path::new(PROCESSED_DIRECTORY)
             .join(dataset_name)
@@ -34,18 +35,50 @@ impl ModelApi for ModelApiImpl {
 
         let dataset_path = csv.to_str().unwrap().to_string();
 
-        let script_path = Path::new(SCRIPTS_DIRECTORY).join(TRAIN_SCRIPT);
+
+        let script_path = match algorithm.as_str() {
+            "lr" => Path::new(SCRIPTS_DIRECTORY).join(LR_TRAIN_SCRIPT),
+            "knn" => Path::new(SCRIPTS_DIRECTORY).join(KNN_TRAIN_SCRIPT),
+            "svm" => Path::new(SCRIPTS_DIRECTORY).join(SVM_TRAIN_SCRIPT),
+            _ => return Err("Model type not found".to_string()),
+        };
+
+        let mut model_args = vec![
+            dataset_path,
+            model_name,
+        ];
+
+        match hyperparameter {
+            Hyperparameters::Svm(hyperparameter) => {
+                model_args.extend(vec![
+                    hyperparameter.kernel,
+                    hyperparameter.c,
+                    hyperparameter.gamma,
+                    hyperparameter.degree,
+                ]);
+            }
+            Hyperparameters::Knn(hyperparameter) => {
+                model_args.extend(vec![
+                    hyperparameter.n_neighbors,
+                    hyperparameter.algorithm,
+                    hyperparameter.weights,
+                    hyperparameter.metric,
+                ]);
+            }
+            Hyperparameters::Lr(hyperparameter) => {
+                model_args.extend(vec![
+                    hyperparameter.penalty,
+                    hyperparameter.c,
+                    hyperparameter.solver,
+                    hyperparameter.max_iter,
+                ]);
+            }
+        }
+
 
         let mut child = run_script(
             &script_path,
-            vec![
-                dataset_path,
-                model_name,
-                hyperparameter.kernel,
-                hyperparameter.c,
-                hyperparameter.gamma,
-                hyperparameter.degree,
-            ],
+            model_args,
         );
         
         let stderr = child.stderr.take().unwrap();

@@ -2,7 +2,7 @@
   import ModelService from "../../services/model-service";
   import ClassificationReport from "../../lib/components/model/ClassificationReport.svelte";
   import SpecificationReport from "../../lib/components/model/SpecificationReport.svelte";
-  import type { Model, ModelHyperparameter } from "../../../bindings";
+  import type { Model, Hyperparameters } from "../../../bindings";
   import ConfusionMatrixReport from "../../lib/components/model/ConfusionMatrixReport.svelte";
   import ModelConfiguration from "../../lib/components/model/ModelConfiguration.svelte";
   import Template from "../../lib/components/Template.svelte";
@@ -15,9 +15,9 @@
     model = null;
   };
 
-  const trainModel = async (modelName: string, hyperparameter: ModelHyperparameter) => {
+  const trainModel = async (modelName: string, algorithm: string, hyperparameter: Hyperparameters) => {
     NProgress.start();
-    await ModelService.trainModel(name, modelName, hyperparameter);
+    await ModelService.trainModel(name, modelName, algorithm, hyperparameter);
     model = await ModelService.getModel(modelName);
     NProgress.done();
   };

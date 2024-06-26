@@ -7,7 +7,9 @@ pub const VENV_DIRECTORY: &str = ".venv";
 
 pub const CONVERTER_SCRIPT: &str = "dataset_preprocessor.py";
 pub const GRAPH_SCRIPT: &str = "preprocess_graph_generator.py";
-pub const TRAIN_SCRIPT: &str = "svm_trainer.py";
+pub const SVM_TRAIN_SCRIPT: &str = "svm_trainer.py";
+pub const KNN_TRAIN_SCRIPT: &str = "knn_trainer.py";
+pub const LR_TRAIN_SCRIPT: &str = "lr_trainer.py";
 pub const PREDICT_SCRIPT: &str = "model_predictor.py";
 
 pub const PROCESSED_OUTPUT_CSV: &str = "output.csv";

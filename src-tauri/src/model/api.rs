@@ -1,11 +1,12 @@
-use crate::model::model::{Model, ModelHyperparameter, ModelPrediction};
+use crate::model::model::{Hyperparameters, Model, ModelPrediction, SVMHyperparameter};
 
 #[taurpc::procedures(path = "model")]
 pub trait ModelApi {
     async fn train(
         dataset_name: String,
         model_name: String,
-        hyperparameter: ModelHyperparameter,
+        algorithm: String,
+        hyperparameter: Hyperparameters,
     ) -> Result<(), String>;
     async fn get_all() -> Result<Vec<Model>, String>;
     async fn get(model_name: String) -> Result<Model, String>;

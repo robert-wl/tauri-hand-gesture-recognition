@@ -7,9 +7,7 @@ use tauri::Manager;
 
 use crate::constants::{CONVERTER_SCRIPT, DATASET_DIRECTORY, GRAPH_SCRIPT, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, PROCESSED_OUTPUT_LDA_GRAPH, PROCESSED_OUTPUT_PCA_GRAPH, PROCESSED_OUTPUT_TSNE_GRAPH, SCRIPTS_DIRECTORY};
 use crate::dataset::api::DatasetApi;
-use crate::dataset::dataset::{
-    Dataset, GeneralDataset, Label, ProgressPayload, TestingDataset, TrainingDataset,
-};
+use crate::dataset::dataset::{Dataset, GeneralDataset, Label, ProgressPayload, TestingDataset, TrainingDataset};
 use crate::model::model::ModelSpecification;
 use crate::py_utils::run_script;
 use crate::utils::{FileType, get_directory_content, get_random_file, read_file, remove_directory_content};

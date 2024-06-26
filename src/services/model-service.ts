@@ -1,9 +1,9 @@
 import BaseService from "./base-service";
-import type { Model, ModelHyperparameter } from "../../bindings";
+import type { Model, Hyperparameters } from "../../bindings";
 
 export default class ModelService extends BaseService {
-  public static async trainModel(dataName: string, modelName: string, hyperparameter: ModelHyperparameter) {
-    return await this.getTauRPCProxy().then((ipc) => ipc.model.train(dataName, modelName, hyperparameter));
+  public static async trainModel(dataName: string, modelName: string, algorithm: string, hyperparameter: Hyperparameters) {
+    return await this.getTauRPCProxy().then((ipc) => ipc.model.train(dataName, modelName, algorithm, hyperparameter));
   }
 
   public static async predict(modelName: string, base64: string) {

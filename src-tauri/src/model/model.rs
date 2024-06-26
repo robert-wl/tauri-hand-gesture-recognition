@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
+use specta::Type;
+
 #[taurpc::ipc_type]
 pub struct Model {
     pub name: String,
@@ -7,13 +10,32 @@ pub struct Model {
     pub confusion_matrix_image: String,
 }
 #[taurpc::ipc_type]
-pub struct ModelHyperparameter {
+pub struct SVMHyperparameter {
     pub kernel: String,
     #[serde(rename = "C")]
     pub c: String,
     pub gamma: String,
     pub degree: String,
 }
+
+#[taurpc::ipc_type]
+pub struct KNNHyperparameter {
+    pub n_neighbors: String,
+    pub algorithm: String,
+    pub weights: String,
+    pub metric: String,
+}
+
+#[taurpc::ipc_type]
+pub struct LRHyperparameter {
+    pub penalty: String,
+    #[serde(rename = "C")]
+    pub c: String,
+    pub solver: String,
+    pub max_iter: String,
+}
+
+
 
 #[taurpc::ipc_type]
 pub struct ModelSpecification {
@@ -23,7 +45,7 @@ pub struct ModelSpecification {
     pub recall: f32,
     pub f1: f32,
     pub confusion_matrix: Vec<Vec<u16>>,
-    pub hyperparameters: ModelHyperparameter,
+    pub hyperparameters: Hyperparameters,
     pub classification_report: ClassificationReport,
 }
 
@@ -48,4 +70,11 @@ pub struct Metrics {
 pub struct ModelPrediction {
     pub class: String,
     pub image_result: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, Type)]
+pub enum Hyperparameters {
+    Svm(SVMHyperparameter),
+    Knn(KNNHyperparameter),
+    Lr(LRHyperparameter),
 }
