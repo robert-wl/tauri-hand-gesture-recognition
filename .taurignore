@@ -3,3 +3,6 @@
 /src-tauri/model/
 /src-tauri/temp/
 /src-tauri/!TEMP/
+/src-tauri/.venv/
+/src-tauri/.venv.empty/
+/src-tauri/.venv.empty.example/

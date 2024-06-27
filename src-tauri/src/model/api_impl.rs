@@ -4,6 +4,8 @@ use std::path::Path;
 
 use base64::Engine;
 use base64::engine::general_purpose;
+use rayon::iter::ParallelIterator;
+use rayon::prelude::IntoParallelRefIterator;
 
 use crate::constants::{CONFUSION_MATRIX_IMAGE, KNN_TRAIN_SCRIPT, LR_TRAIN_SCRIPT, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PREDICT_SCRIPT, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, SCRIPTS_DIRECTORY, SVM_TRAIN_SCRIPT, TEMP_DIRECTORY, TESTING_INPUT_IMAGE, TESTING_OUTPUT_IMAGE};
 use crate::model::api::ModelApi;
@@ -111,7 +113,7 @@ impl ModelApi for ModelApiImpl {
         let models = get_directory_content(models_dir, &FileType::Directory);
 
         let model_list = models
-            .iter()
+            .par_iter()
             .map(|model_dir| {
                 let specification_json = model_dir.join(MODEL_SPECIFICATION_JSON);
 

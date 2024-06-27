@@ -16,5 +16,6 @@
     "isolatedModules": true
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+  "exclude": ["node_modules/*", "src-tauri/*", "code/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

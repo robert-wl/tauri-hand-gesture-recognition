@@ -1,27 +1,17 @@
 <script>
-  import SpinnerIcon from "./icons/SpinnerIcon.svelte";
-  import { onMount } from "svelte";
-
-  export let centered = true;
-
-  let number = 0;
-
-  onMount(() => {
-    const interval = setInterval(() => {
-      number += 1;
-      number %= 5;
-      console.log(number);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  });
+  import { scale } from "svelte/transition";
 </script>
 
-<p class="flex flex-row text-lg gap-4 items-center justify-center {centered ? '' : 'pe-[20%]'}">
-  <SpinnerIcon
-    height="0.5rem"
-    width="0.5rem" />
-  Loading {#each Array.from({ length: number }) as _}
-    .{" "}
-  {/each}
-</p>
+<div
+  class="card w-1/2 max-w-96 items-center justify-center h-fit bg-base-100 shadow-xl border-primary border-t-2"
+  in:scale|global={{ duration: 200, opacity: 0.5, start: 0.5 }}>
+  <div class="w-64 h-64">
+    <img
+      alt="Loading"
+      class="object-cover"
+      src="/loading.gif" />
+  </div>
+
+  <hr class="my-2 w-full border-gray-200" />
+  <p class="text-center text-lg font-bold py-4 pb-6">Loading...</p>
+</div>

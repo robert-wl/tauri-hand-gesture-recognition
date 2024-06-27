@@ -20,7 +20,9 @@
 
   const getDataset = async () => {
     NProgress.start();
+    const now = performance.now();
     dataset = await DatasetService.getDataset(name);
+    console.log("Fetched dataset", (performance.now() - now) / 1000, "seconds");
     NProgress.done();
   };
 
@@ -34,6 +36,7 @@
 
     await DatasetService.preprocessDataset(name);
 
+    await getGraphData();
     isLoading = false;
   };
 

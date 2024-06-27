@@ -3,6 +3,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 
+use futures::future;
+use rayon::iter::ParallelIterator;
+use rayon::prelude::IntoParallelRefIterator;
 use tauri::Manager;
 
 use crate::constants::{CONVERTER_SCRIPT, DATASET_DIRECTORY, GRAPH_SCRIPT, MODEL_DIRECTORY, MODEL_SPECIFICATION_JSON, PROCESSED_DIRECTORY, PROCESSED_OUTPUT_CSV, PROCESSED_OUTPUT_LDA_GRAPH, PROCESSED_OUTPUT_PCA_GRAPH, PROCESSED_OUTPUT_TSNE_GRAPH, SCRIPTS_DIRECTORY};
@@ -22,7 +25,7 @@ impl DatasetApi for DatasetApiImpl {
             get_directory_content(Path::new(DATASET_DIRECTORY), &FileType::Directory);
 
         let datasets = dataset_dirs
-            .iter()
+            .par_iter()
             .map(|dir| {
                 let name = dir
                     .file_name()
@@ -41,10 +44,12 @@ impl DatasetApi for DatasetApiImpl {
 
                 let label_dirs = get_directory_content(label_dir, &FileType::Directory);
 
+
                 dataset.label_amount = label_dirs.len() as u32;
-                for dir in label_dirs {
-                    dataset.data_amount += get_directory_content(&dir, &FileType::File).len() as u32;
-                }
+                dataset.data_amount = label_dirs
+                    .par_iter()
+                    .map(|dir| get_directory_content(dir.as_path(), &FileType::File).len() as u32)
+                    .sum();
 
                 dataset
             })
@@ -59,7 +64,7 @@ impl DatasetApi for DatasetApiImpl {
         let dataset_dirs = get_directory_content(processed_dir, &FileType::Directory);
 
         let model_datasets: Vec<TrainingDataset> = dataset_dirs
-            .iter()
+            .par_iter()
             .filter_map(|dataset| {
                 let csv = dataset.join(PROCESSED_OUTPUT_CSV);
                 let file = File::open(csv);
@@ -99,7 +104,7 @@ impl DatasetApi for DatasetApiImpl {
         let model_dirs = get_directory_content(model_dir, &FileType::Directory);
 
         let testing_datasets: Vec<TestingDataset> = model_dirs
-            .iter()
+            .par_iter()
             .map(|dir| {
                 let json = dir.join(MODEL_SPECIFICATION_JSON);
 
@@ -146,37 +151,47 @@ impl DatasetApi for DatasetApiImpl {
 
         let dir_list = get_directory_content(&dataset_dir, &FileType::Directory);
 
-        let mut data_label: Vec<Label> = Vec::new();
 
-        for dir in dir_list {
-            let dataset_label = dir
-                .file_name()
-                .unwrap()
-                .to_os_string()
-                .into_string()
-                .unwrap();
+        let tasks: Vec<_> = dir_list
+            .iter()
+            .map(|dir| {
+                let name = name.clone();
+                let self_clone = self.clone();
+                let dir = dir.clone();
+                tokio::spawn(async move {
+                    let dataset_label = dir
+                        .file_name()
+                        .unwrap()
+                        .to_os_string()
+                        .into_string()
+                        .unwrap();
 
-            let data = self
-                .clone()
-                .get_data(name.clone(), dataset_label.clone())
-                .await
-                .unwrap();
+                    let data = self_clone
+                        .clone()
+                        .get_data(name.clone(), dataset_label.clone())
+                        .await
+                        .unwrap();
 
-            let is_preprocessed = self
-                .clone()
-                .get_processed_image(name.clone(), dataset_label.clone(), data[0].clone())
-                .await
-                .unwrap()
-                .is_some();
+                    let is_preprocessed = self_clone
+                        .get_processed_image(name.clone(), dataset_label.clone(), data[0].clone())
+                        .await
+                        .unwrap()
+                        .is_some();
 
-            let dataset_label = Label {
-                name: dataset_label.clone(),
-                data,
-                is_preprocessed,
-            };
+                    Label {
+                        name: dataset_label.clone(),
+                        data,
+                        is_preprocessed,
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
 
-            data_label.push(dataset_label);
-        }
+        let data_label = future::join_all(tasks)
+            .await
+            .into_iter()
+            .filter_map(|task| task.ok())
+            .collect();
 
         Ok(data_label)
     }
@@ -187,7 +202,7 @@ impl DatasetApi for DatasetApiImpl {
         let file_dirs = get_directory_content(&label_dir, &FileType::File);
 
         let data = file_dirs
-            .iter()
+            .par_iter()
             .map(|file| {
                 file.file_name()
                     .unwrap()
@@ -351,7 +366,7 @@ impl DatasetApi for DatasetApiImpl {
         let graph_names = vec![PROCESSED_OUTPUT_LDA_GRAPH, PROCESSED_OUTPUT_PCA_GRAPH, PROCESSED_OUTPUT_TSNE_GRAPH];
         
         let mut graphs: HashMap<String, String> = HashMap::new();
-        
+
         for graph in graph_names {
             let graph_path = processed_dir.join(graph);
             let base64_thumbnail = match read_file(&graph_path) {
