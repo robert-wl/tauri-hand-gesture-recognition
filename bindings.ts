@@ -42,7 +42,7 @@ export type TestingDataset = { name: string; dataset_name: string; accuracy: num
 
 export type TrainingDataset = { name: string; data_amount: number; feature_count: number }
 
-const ARGS_MAP = {"dataset":"{\"get\":[\"dataset_name\"],\"get_random_image\":[\"path\"],\"get_processed_image\":[\"name\",\"label\",\"data\"],\"get_all_training_dataset\":[],\"get_random_processed_image\":[\"path\"],\"get_all\":[],\"get_processed_graphs\":[\"name\"],\"preprocess\":[\"dataset_name\"],\"get_all_testing_dataset\":[],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_labels\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"]}","util":"{\"get_current_dir\":[],\"open_directory\":[]}","model":"{\"predict\":[\"model_name\",\"image\"],\"get\":[\"model_name\"],\"train\":[\"dataset_name\",\"model_name\",\"algorithm\",\"hyperparameter\"],\"get_all\":[],\"remove\":[\"model_name\"]}"}
+const ARGS_MAP = {"dataset":"{\"get_all_training_dataset\":[],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_processed_image\":[\"name\",\"label\",\"data\"],\"preprocess\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"],\"get_processed_graphs\":[\"name\"],\"get_random_image\":[\"path\"],\"get_all\":[],\"get_random_processed_image\":[\"path\"],\"get\":[\"dataset_name\"],\"get_all_testing_dataset\":[],\"get_labels\":[\"dataset_name\"]}","util":"{\"open_directory\":[],\"get_current_dir\":[]}","model":"{\"get\":[\"model_name\"],\"train\":[\"dataset_name\",\"model_name\",\"algorithm\",\"hyperparameter\"],\"get_all\":[],\"remove\":[\"model_name\"],\"predict\":[\"model_name\",\"image\"]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)
