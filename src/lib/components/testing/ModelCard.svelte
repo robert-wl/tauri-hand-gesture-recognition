@@ -12,6 +12,7 @@
   in:scale|global={{ duration: 200, opacity: 0.5, start: 0.5 }}>
   <div class="card-body items-center pb-2">
     <h2 class="card-title text-xl text-center pb-2">{model.name}</h2>
+    <p class="text-center font-semibold">{model.model_specification.algorithm}</p>
     <p class="text-center">Trained Using {model.model_specification.dataset_name}</p>
     <p class="text-center">Accuracy: {(model.model_specification.accuracy * 100).toFixed(2)}%</p>
   </div>

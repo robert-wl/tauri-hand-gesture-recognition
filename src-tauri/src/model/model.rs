@@ -39,6 +39,7 @@ pub struct LRHyperparameter {
 
 #[taurpc::ipc_type]
 pub struct ModelSpecification {
+    pub algorithm: String,
     pub dataset_name: String,
     pub accuracy: f32,
     pub precision: f32,

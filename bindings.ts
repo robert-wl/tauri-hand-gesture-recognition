@@ -20,7 +20,7 @@ export type Model = { name: string; model_specification: ModelSpecification; con
 
 export type ModelPrediction = { class: string; image_result: string }
 
-export type ModelSpecification = { dataset_name: string; accuracy: number; precision: number; recall: number; f1: number; confusion_matrix: number[][]; hyperparameters: Hyperparameters; classification_report: ClassificationReport }
+export type ModelSpecification = { algorithm: string; dataset_name: string; accuracy: number; precision: number; recall: number; f1: number; confusion_matrix: number[][]; hyperparameters: Hyperparameters; classification_report: ClassificationReport }
 
 export type ProgressPayload = { name: string; label: string; current_amount: number; total_amount: number }
 
@@ -42,7 +42,7 @@ export type TestingDataset = { name: string; dataset_name: string; accuracy: num
 
 export type TrainingDataset = { name: string; data_amount: number; feature_count: number }
 
-const ARGS_MAP = {"dataset":"{\"get_all_training_dataset\":[],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_processed_image\":[\"name\",\"label\",\"data\"],\"preprocess\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"],\"get_processed_graphs\":[\"name\"],\"get_random_image\":[\"path\"],\"get_all\":[],\"get_random_processed_image\":[\"path\"],\"get\":[\"dataset_name\"],\"get_all_testing_dataset\":[],\"get_labels\":[\"dataset_name\"]}","util":"{\"open_directory\":[],\"get_current_dir\":[]}","model":"{\"get\":[\"model_name\"],\"train\":[\"dataset_name\",\"model_name\",\"algorithm\",\"hyperparameter\"],\"get_all\":[],\"remove\":[\"model_name\"],\"predict\":[\"model_name\",\"image\"]}"}
+const ARGS_MAP = {"dataset":"{\"preprocess\":[\"dataset_name\"],\"get_all_training_dataset\":[],\"get_all_testing_dataset\":[],\"get_processed_graphs\":[\"name\"],\"get_data\":[\"dataset_name\",\"label_name\"],\"get_random_processed_image\":[\"path\"],\"get_all\":[],\"get\":[\"dataset_name\"],\"get_random_image\":[\"path\"],\"get_labels\":[\"dataset_name\"],\"get_image\":[\"name\",\"label\",\"data\"],\"get_processed_image\":[\"name\",\"label\",\"data\"]}","util":"{\"get_current_dir\":[],\"open_directory\":[]}","model":"{\"get\":[\"model_name\"],\"train\":[\"dataset_name\",\"model_name\",\"algorithm\",\"hyperparameter\"],\"get_all\":[],\"predict\":[\"model_name\",\"image\"],\"remove\":[\"model_name\"]}"}
 import { createTauRPCProxy as createProxy } from "taurpc"
 
 export const createTauRPCProxy = () => createProxy<Router>(ARGS_MAP)

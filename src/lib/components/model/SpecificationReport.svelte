@@ -15,6 +15,8 @@
   <div class="card-title pb-0 py-4 flex flex-col items-center justify-between">
     <h2 class="text-xl font-bold">{model.name}</h2>
     <hr class="my-2 w-full border-gray-200" />
+    <h2 class="text-xl font-semibold">{model.model_specification.algorithm}</h2>
+    <hr class="my-2 w-full border-gray-200" />
   </div>
   <div class="card-body pt-2 flex flex-col h-full items-start justify-start">
     <table class="table">

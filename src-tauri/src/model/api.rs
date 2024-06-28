@@ -1,4 +1,4 @@
-use crate::model::model::{Hyperparameters, Model, ModelPrediction, SVMHyperparameter};
+use crate::model::model::{Hyperparameters, Model, ModelPrediction};
 
 #[taurpc::procedures(path = "model")]
 pub trait ModelApi {

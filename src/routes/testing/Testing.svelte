@@ -56,8 +56,9 @@
         <div class="card-body pt-2 flex flex-col h-full items-start justify-start">
           {#await getModel() then model}
             <div class="flex flex-col items-start flex-1">
-              <div class="text-center">Trained Dataset: {model.model_specification.dataset_name}</div>
-              <div class="text-center w-full">Accuracy: {(model.model_specification.accuracy * 100).toFixed(2)} %</div>
+              <div class="text-center w-full font-semibold">{model.model_specification.algorithm}</div>
+              <div class="text-center w-full">Trained Dataset: {model.model_specification.dataset_name}</div>
+              <div class="text-center w-full">Accuracy: {(model.model_specification.accuracy * 100).toFixed(2)}%</div>
             </div>
           {/await}
           {#if isLoading}

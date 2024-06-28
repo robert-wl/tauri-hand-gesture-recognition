@@ -25,7 +25,7 @@
 </script>
 
 <Template
-  description="Choose your model from the list below to start testing."
+  description="Choose your model to start testing."
   title="Models">
   <div class="w-full flex flex-wrap justify-center items-center gap-4 p-4">
     {#await fetchData()}
